@@ -19,9 +19,8 @@ Each client runs their own isolated instance with their own database.
 - [Node.js 20+](https://nodejs.org)
 - [Task](https://taskfile.dev/docs/installation)
 
-## Task shell completion
-
-Enable `tab` autocompletion for `task` commands:
+<details>
+<summary>Task shell completion</summary>
 
 **bash** (Linux / Mac with bash)
 ```bash
@@ -44,6 +43,8 @@ echo 'task --completion fish | source' >> ~/.config/fish/config.fish
 ```powershell
 Add-Content $PROFILE "`nInvoke-Expression (task --completion powershell)"
 ```
+
+</details>
 
 ## Getting started
 
@@ -71,35 +72,7 @@ task frontend:dev   # Vite on http://localhost:5173
 
 ## Database migrations
 
-Schema is managed with **Flyway**. Migration files live in `backend/src/main/resources/db/migration/` and run automatically on startup.
-
-### Early development — iterating on the schema
-
-While the schema is still being figured out, edit `V1__initial_schema.sql` directly. After every change:
-
-```bash
-task db:reset       # wipe the DB (removes Flyway history too)
-# then restart the backend — Flyway reruns V1 from scratch
-```
-
-### Stable schema — adding changes
-
-Once V1 is locked in, never edit it again. Add new versioned files instead:
-
-```
-V2__add_users.sql
-V3__add_thresholds_to_indicators.sql
-```
-
-Flyway runs only migrations that haven't been applied yet — teammates automatically get new migrations on next startup after pulling.
-
-### Naming convention
-
-```
-V{version}__{description}.sql
-```
-
-Double underscore between version and description. Examples: `V2__create_users.sql`, `V3__add_risk_level_to_indicators.sql`
+Schema is managed with **Flyway** — migration files in `backend/src/main/resources/db/migration/` run automatically on startup. See [`backend/README.md`](backend/README.md#database--flyway) for the full workflow.
 
 ## Hot reload
 
@@ -138,6 +111,8 @@ KRI-Monitoring/
 ├── Taskfile.yml
 └── .gitignore
 ```
+
+New to Spring? See [`backend/README.md`](backend/README.md) for a guide covering how the layers connect, validation, logging, Flyway, MapStruct, Swagger UI, and a step-by-step walkthrough for adding a new feature.
 
 ## Database
 
