@@ -1,5 +1,9 @@
 version: '3'
 
+includes:
+  book:
+    taskfile: ./Taskfile.books.yml
+
 tasks:
   dev:
     desc: Start the Spring Boot backend in dev mode (hot reload)
@@ -23,3 +27,4 @@ tasks:
   install:
     desc: Compile, test and install the backend JAR to local Maven repository
     cmd: bash ./mvnw install
+

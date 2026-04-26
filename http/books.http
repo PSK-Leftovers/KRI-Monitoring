@@ -1,0 +1,71 @@
+### Variables
+@baseUrl = http://localhost:8080
+@bookId = 1
+
+### Get all books
+GET {{baseUrl}}/api/books
+Accept: application/json
+
+### Get book by id — happy path
+GET {{baseUrl}}/api/books/{{bookId}}
+Accept: application/json
+
+### Get book by id — not found (triggers 404 EntityNotFoundException)
+GET {{baseUrl}}/api/books/9999
+Accept: application/json
+
+### Create a book — valid
+POST {{baseUrl}}/api/books
+Content-Type: application/json
+
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "publishedYear": 2008
+}
+
+### Create a book — missing required fields (triggers 400 validation error)
+POST {{baseUrl}}/api/books
+Content-Type: application/json
+
+{
+  "title": "",
+  "author": null,
+  "publishedYear": 2008
+}
+
+### Create a book — publishedYear out of range (triggers 400 validation error)
+POST {{baseUrl}}/api/books
+Content-Type: application/json
+
+{
+  "title": "Future Book",
+  "author": "Someone",
+  "publishedYear": 9999
+}
+
+### Update a book — happy path
+PUT {{baseUrl}}/api/books/{{bookId}}
+Content-Type: application/json
+
+{
+  "title": "Clean Code (2nd Ed.)",
+  "author": "Robert C. Martin",
+  "publishedYear": 2025
+}
+
+### Update a book — not found (triggers 404 EntityNotFoundException)
+PUT {{baseUrl}}/api/books/9999
+Content-Type: application/json
+
+{
+  "title": "Ghost Book",
+  "author": "Nobody",
+  "publishedYear": 2020
+}
+
+### Delete a book — happy path
+DELETE {{baseUrl}}/api/books/{{bookId}}
+
+### Delete a book — not found (triggers 404 EntityNotFoundException)
+DELETE {{baseUrl}}/api/books/9999
