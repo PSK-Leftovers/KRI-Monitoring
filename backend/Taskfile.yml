@@ -1,0 +1,25 @@
+version: '3'
+
+tasks:
+  dev:
+    desc: Start the Spring Boot backend in dev mode (hot reload)
+    cmd: bash ./mvnw spring-boot:run
+    preconditions:
+      - sh: java -version > /dev/null 2>&1
+        msg: Java is not installed or not on PATH. Install Java 21 from https://adoptium.net
+
+  build:
+    desc: Build the backend JAR
+    cmd: bash ./mvnw clean package -DskipTests
+
+  test:
+    desc: Run backend tests
+    cmd: bash ./mvnw test
+
+  clean:
+    desc: Remove the target directory
+    cmd: bash ./mvnw clean
+
+  install:
+    desc: Compile, test and install the backend JAR to local Maven repository
+    cmd: bash ./mvnw install

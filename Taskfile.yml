@@ -1,0 +1,44 @@
+version: '3'
+
+silent: false
+
+includes:
+  backend:
+    taskfile: ./backend/Taskfile.yml
+    dir: ./backend
+  frontend:
+    taskfile: ./frontend/Taskfile.yml
+    dir: ./frontend
+
+tasks:
+  # ── Database ────────────────────────────────────────────────────────────────
+
+  db:up:
+    desc: Start the PostgreSQL database in the background
+    cmd: docker compose up -d
+    preconditions:
+      - sh: docker info > /dev/null 2>&1
+        msg: Docker is not running. Please start Docker Desktop first.
+
+  db:down:
+    desc: Stop the database
+    cmd: docker compose down
+
+  db:reset:
+    desc: Wipe all data and restart the database
+    cmds:
+      - docker compose down -v
+      - docker compose up -d
+    prompt: This will delete all local database data. Continue?
+
+  db:logs:
+    desc: Tail database logs
+    cmd: docker compose logs -f database
+
+  # ── Composite ────────────────────────────────────────────────────────────────
+
+  setup:
+    desc: First-time setup — install all dependencies
+    cmds:
+      - task: frontend:install
+      - task: db:up

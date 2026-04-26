@@ -1,0 +1,21 @@
+version: '3'
+
+tasks:
+  install:
+    desc: Install frontend dependencies (run once after clone or after pulling package.json changes)
+    cmd: npm install
+    preconditions:
+      - sh: node --version > /dev/null 2>&1
+        msg: Node.js is not installed. Install Node 20+ from https://nodejs.org
+
+  dev:
+    desc: Start the Vite dev server
+    cmd: npm run dev
+
+  build:
+    desc: Build the frontend for production
+    cmd: npm run build
+
+  lint:
+    desc: Lint the frontend
+    cmd: npm run lint
