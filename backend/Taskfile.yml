@@ -1,9 +1,5 @@
 version: '3'
 
-includes:
-  book:
-    taskfile: ./Taskfile.books.yml
-
 tasks:
   dev:
     desc: Start the Spring Boot backend in dev mode (hot reload)
@@ -17,7 +13,7 @@ tasks:
     cmd: bash ./mvnw clean package -DskipTests
 
   test:
-    desc: Run backend tests
+    desc: Run unit tests
     cmd: bash ./mvnw test
 
   clean:
