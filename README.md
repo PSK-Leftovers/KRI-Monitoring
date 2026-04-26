@@ -59,7 +59,7 @@ cd KRI-Monitoring
 task setup
 ```
 
-**3. Daily development** — open two terminals and run one in each
+**3. Daily development** — open two terminals and run one in each (or use IDE features)
 ```bash
 # Terminal 1
 task backend:dev    # Spring Boot on http://localhost:8080
