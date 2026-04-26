@@ -54,7 +54,7 @@ git clone <repo-url>
 cd KRI-Monitoring
 ```
 
-**2. First-time setup** — installs frontend dependencies and starts the database
+**2. First-time setup** — installs frontend dependencies, starts the database, and builds the backend
 ```bash
 task setup
 ```

@@ -11,6 +11,11 @@ includes:
     dir: ./frontend
 
 tasks:
+  default:
+    desc: List all available tasks
+    silent: true
+    cmd: task --list
+
   # ── Database ────────────────────────────────────────────────────────────────
 
   db:up:
@@ -42,3 +47,4 @@ tasks:
     cmds:
       - task: frontend:install
       - task: db:up
+      - task: backend:build
