@@ -17,3 +17,6 @@ backend/target/
 # Frontend
 frontend/node_modules/
 frontend/dist/
+
+# AI
+.claude/settings.local.json
