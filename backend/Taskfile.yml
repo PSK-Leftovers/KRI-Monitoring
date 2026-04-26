@@ -9,7 +9,7 @@ tasks:
         msg: Java is not installed or not on PATH. Install Java 21 from https://adoptium.net
 
   build:
-    desc: Build the backend JAR
+    desc: Compile and package the backend JAR (skips tests)
     cmd: bash ./mvnw clean package -DskipTests
 
   test:
@@ -19,8 +19,4 @@ tasks:
   clean:
     desc: Remove the target directory
     cmd: bash ./mvnw clean
-
-  install:
-    desc: Compile, test and install the backend JAR to local Maven repository
-    cmd: bash ./mvnw install
 

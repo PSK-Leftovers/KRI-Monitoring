@@ -70,6 +70,12 @@ task frontend:dev   # Vite on http://localhost:5173
 
 > If you don't want to install Task, see [Manual setup](#manual-setup) below.
 
+## IDE setup
+
+For the best experience, open `backend/` and `frontend/` as separate IDE projects alongside the repo root. When IntelliJ has `backend/pom.xml` as the project root it can properly index Maven dependencies, enable Spring support, and make code navigation and auto-complete work correctly. The same applies for the frontend.
+
+You can keep the repo root open separately at the same time — useful for editing `docker-compose.yml`, `Taskfile.yml`, and other root-level files.
+
 ## Database migrations
 
 Schema is managed with **Flyway** — migration files in `backend/src/main/resources/db/migration/` run automatically on startup. See [`backend/README.md`](backend/README.md#database--flyway) for the full workflow.
@@ -86,20 +92,17 @@ Two ways to trigger a reload after editing Java files:
 
 ## All available tasks
 
+Run `task` with no arguments to list all available tasks. Common ones:
+
 | Task | Description |
 |---|---|
 | `task setup` | First-time setup: install deps + start DB |
 | `task backend:dev` | Start Spring Boot with hot reload |
-| `task backend:build` | Build the backend JAR |
-| `task backend:test` | Run backend tests |
-| `task frontend:install` | Install frontend npm dependencies |
+| `task backend:test` | Run unit tests |
 | `task frontend:dev` | Start Vite dev server |
-| `task frontend:build` | Build frontend for production |
-| `task frontend:lint` | Lint frontend code |
 | `task db:up` | Start the database |
 | `task db:down` | Stop the database |
 | `task db:reset` | Wipe all data and restart the database |
-| `task db:logs` | Tail database logs |
 
 ## Project structure
 

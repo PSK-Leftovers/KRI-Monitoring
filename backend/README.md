@@ -1,11 +1,13 @@
 # Backend — Spring Boot Guide
 
-A reference for teammates new to Spring. The `book/` package is a **demo** — it exists to show every pattern you'll use when building the real KRI features. Read it alongside this guide.
+A reference for people new to Spring. The `book/` package is a **demo** — it exists to show patterns that can be used when building the real KRI features. Read it alongside this guide.
 
 - [Package structure](#package-structure)
 - [Request lifecycle](#request-lifecycle)
 - [Database & Flyway](#database--flyway)
 - [Validation](#validation)
+- [Dependency injection](#dependency-injection)
+- [Lombok](#lombok)
 - [MapStruct (DTO mapping)](#mapstruct-dto-mapping)
 - [Logging & request tracing](#logging--request-tracing)
 - [Swagger UI](#swagger-ui)
@@ -105,7 +107,7 @@ V1_2__add-organization-id-to-books.sql
 V1_3__create-kri-table.sql
 ```
 
-Each migration must be additive (add columns, create tables) — never destructive. Once a migration has run on any shared environment, treat it as immutable: Flyway checksums every file and will refuse to start if it detects a modification.
+You can do anything in a new migration — add columns, drop columns, rename tables, delete data. There are no restrictions on what SQL you write. The only rule is: **never edit a migration file that has already been applied**. Flyway checksums every file when it runs it, and if the file changes afterwards it will refuse to start with a checksum mismatch error.
 
 **Naming convention:** `V{major}_{minor}__{description}.sql` — double underscore before the description, words separated by hyphens.
 
@@ -173,6 +175,70 @@ public class BookService {
     }
 }
 ```
+
+---
+
+## Dependency injection
+
+Spring manages object creation — you never call `new` on a service or repository. Instead, declare your dependencies as constructor parameters and Spring injects them automatically.
+
+Always use **constructor injection**. Field injection (`@Autowired` on a field) is discouraged — it hides dependencies and makes classes harder to test.
+
+The cleanest way is to let Lombok generate the constructor:
+
+```java
+@Service
+@RequiredArgsConstructor          // generates a constructor for all final fields
+public class BookService {
+
+    private final BookRepository bookRepository;   // injected by Spring
+    private final BookMapper bookMapper;           // injected by Spring
+}
+```
+
+`@RequiredArgsConstructor` generates a constructor that takes all `final` fields as parameters. Spring sees a single constructor and uses it automatically — no `@Autowired` annotation needed.
+
+---
+
+## Lombok
+
+Lombok generates boilerplate at compile time via annotation processing. The generated code is invisible in source but fully present in the compiled output.
+
+**On entities:**
+
+```java
+@Entity
+@Getter              // generates getters for all fields
+@Setter              // generates setters for all fields
+@Builder             // generates a builder: Book.builder().title("...").build()
+@NoArgsConstructor   // generates no-arg constructor (required by JPA)
+@AllArgsConstructor  // generates all-args constructor (required by @Builder alongside @NoArgsConstructor)
+public class Book { ... }
+```
+
+**On services / components:**
+
+```java
+@Service
+@RequiredArgsConstructor   // constructor injection
+@Slf4j                     // generates a `log` field for logging
+public class BookService { ... }
+```
+
+**Common annotations reference:**
+
+| Annotation | What it generates |
+|---|---|
+| `@Getter` | Getters for all fields |
+| `@Setter` | Setters for all fields |
+| `@NoArgsConstructor` | `Book()` — no arguments |
+| `@AllArgsConstructor` | `Book(id, title, author, ...)` — all fields |
+| `@RequiredArgsConstructor` | Constructor for all `final` fields only |
+| `@Builder` | `Book.builder().title("x").build()` |
+| `@Slf4j` | `private static final Logger log = ...` |
+| `@Data` | `@Getter` + `@Setter` + `@ToString` + `@EqualsAndHashCode` — avoid on JPA entities |
+
+> **Avoid `@Data` on entities** — its generated `equals`/`hashCode` uses all fields which causes problems with JPA lazy loading and bidirectional relationships. Use `@Getter` + `@Setter` instead.
 
 ---
 
