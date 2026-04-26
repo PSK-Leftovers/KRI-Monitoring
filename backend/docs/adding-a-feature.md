@@ -122,7 +122,6 @@ Reference: `book/BookMapper.java`
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)      // default for all methods — optimises reads
 public class OrganizationService {
 
     private final OrganizationRepository repository;
@@ -140,22 +139,19 @@ public class OrganizationService {
                 .orElseThrow(() -> new EntityNotFoundException("Organization not found: " + id));
     }
 
-    @Transactional                   // overrides class-level for write operations
     public OrganizationResponse create(CreateOrganizationRequest request) {
         log.info("Creating organization name={}", request.name());
         return mapper.toResponse(repository.save(mapper.toEntity(request)));
     }
 
-    @Transactional
     public OrganizationResponse update(Long id, CreateOrganizationRequest request) {
         Organization org = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Organization not found: " + id));
         org.setName(request.name());
         org.setSlug(request.slug());
-        return mapper.toResponse(org);  // no explicit save — JPA detects changes on the managed entity
+        return mapper.toResponse(repository.save(org));
     }
 
-    @Transactional
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new EntityNotFoundException("Organization not found: " + id);
@@ -233,6 +229,6 @@ Start the backend and open `http://localhost:8080/swagger-ui.html`. Your new end
 - [ ] Repository: extends `JpaRepository<Entity, Long>`
 - [ ] DTOs: separate request/response records, validation annotations on request fields
 - [ ] Mapper: `@Mapper(componentModel = "spring")`, `toResponse` + `toEntity` methods
-- [ ] Service: `@Transactional(readOnly = true)` on class, `@Transactional` on write methods, `EntityNotFoundException` for missing resources
+- [ ] Service: `EntityNotFoundException` for missing resources, explicit `save()` on updates
 - [ ] Controller: `@RestController`, `@RequestMapping`, `@Valid` on request bodies, correct `@ResponseStatus` codes
 - [ ] Verified in Swagger UI
