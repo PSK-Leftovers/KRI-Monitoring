@@ -1,5 +1,5 @@
-import IndicatorsPage from "./pages/IndicatorsPage";
+import RodikliaiPage from "./pages/RodikliaiPage";
 
 export default function App() {
-  return <IndicatorsPage />;
+  return <RodikliaiPage />;
 }
