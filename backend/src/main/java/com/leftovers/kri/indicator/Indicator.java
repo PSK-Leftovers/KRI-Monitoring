@@ -1,6 +1,7 @@
 package com.leftovers.kri.indicator;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,13 +15,14 @@ public class Indicator {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @NotBlank
     private String name;
 
-    @Column(length = 500)
     private String description;
 
     private Double greenThreshold;
+
     private Double yellowThreshold;
+
     private Double redThreshold;
 }
