@@ -1,4 +1,4 @@
-package com.leftovers.kri.entity;
+package com.leftovers.kri.indicator;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -6,23 +6,23 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "rodiklis")
+@Table(name = "indicator")
 @Getter
 @Setter
-public class Rodiklis {
+public class Indicator {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
-    private String pavadinimas;
+    private String name;
 
-    private String aprasymas;
+    private String description;
 
-    private Double ribaZalia;
+    private Double greenThreshold;
 
-    private Double ribaGeltona;
+    private Double yellowThreshold;
 
-    private Double ribaRaudona;
+    private Double redThreshold;
 }
