@@ -1,11 +1,11 @@
-CREATE TABLE rodiklis
+CREATE TABLE indicator
 (
     id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    pavadinimas   VARCHAR(255) NOT NULL,
-    aprasymas     TEXT,
-    riba_zalia    DOUBLE PRECISION,
-    riba_geltona  DOUBLE PRECISION,
-    riba_raudona  DOUBLE PRECISION
+    name   VARCHAR(255) NOT NULL,
+    description     TEXT,
+    green_threshold    DOUBLE PRECISION,
+    yellow_threshold  DOUBLE PRECISION,
+    red_threshold  DOUBLE PRECISION
 );
 
 CREATE TABLE books
