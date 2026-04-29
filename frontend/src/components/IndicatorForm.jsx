@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-export default function RodiklisForm({ initial, onSave, onCancel }) {
+export default function IndicatorForm({ initial, onSave, onCancel }) {
     const [form, setForm] = useState({
-        pavadinimas: "",
-        aprasymas: "",
-        ribaZalia: "",
-        ribaGeltona: "",
-        ribaRaudona: "",
+        name: "",
+        description: "",
+        greenThreshold: "",
+        yellowThreshold: "",
+        redThreshold: "",
         ...initial,
     });
 
@@ -22,52 +22,52 @@ export default function RodiklisForm({ initial, onSave, onCancel }) {
 
         onSave({
             ...form,
-            ribaZalia: Number(form.ribaZalia),
-            ribaGeltona: Number(form.ribaGeltona),
-            ribaRaudona: Number(form.ribaRaudona),
+            greenThreshold: Number(form.greenThreshold),
+            yellowThreshold: Number(form.yellowThreshold),
+            redThreshold: Number(form.redThreshold),
         });
     };
 
     return (
         <div style={page}>
             <button onClick={onCancel} style={backButton}>
-                ← Grįžti
+                ← Back
             </button>
 
             <h1 style={title}>
-                {form.id ? "Redaguoti rodiklį" : "Naujas rodiklis"}
+                {form.id ? "Edit indicator" : "New indicator"}
             </h1>
 
             <form onSubmit={handleSubmit} style={formStyle}>
                 <div>
-                    <label>Pavadinimas *</label>
+                    <label>Name *</label>
                     <input
                         required
-                        value={form.pavadinimas}
-                        onChange={set("pavadinimas")}
-                        placeholder="Įveskite pavadinimą"
+                        value={form.name}
+                        onChange={set("name")}
+                        placeholder="Enter name"
                         style={input}
                     />
                 </div>
 
                 <div>
-                    <label>Aprašymas</label>
+                    <label>Description</label>
                     <textarea
-                        value={form.aprasymas || ""}
-                        onChange={set("aprasymas")}
-                        placeholder="Trumpas aprašymas..."
+                        value={form.description || ""}
+                        onChange={set("description")}
+                        placeholder="Short description..."
                         style={textarea}
                     />
                 </div>
 
                 <div>
-                    <label>Rizikos ribos *</label>
+                    <label>Risk thresholds *</label>
 
                     <div style={limitsGrid}>
                         {[
-                            ["ribaZalia", "Žalia riba", "#27500A"],
-                            ["ribaGeltona", "Geltona riba", "#633806"],
-                            ["ribaRaudona", "Raudona riba", "#A32D2D"],
+                            ["greenThreshold", "Green threshold", "#27500A"],
+                            ["yellowThreshold", "Yellow threshold", "#633806"],
+                            ["redThreshold", "Red threshold", "#A32D2D"],
                         ].map(([key, label, color]) => (
                             <div key={key} style={limitBox(color)}>
                                 <label style={{ fontSize: "12px", color, fontWeight: 500 }}>
@@ -78,7 +78,7 @@ export default function RodiklisForm({ initial, onSave, onCancel }) {
                                     type="number"
                                     value={form[key]}
                                     onChange={set(key)}
-                                    placeholder="pvz. 100"
+                                    placeholder="e.g. 100"
                                     style={input}
                                 />
                             </div>
@@ -88,11 +88,11 @@ export default function RodiklisForm({ initial, onSave, onCancel }) {
 
                 <div style={actions}>
                     <button type="button" onClick={onCancel}>
-                        Atšaukti
+                        Cancel
                     </button>
 
                     <button type="submit" style={submitButton}>
-                        {form.id ? "Išsaugoti" : "Sukurti rodiklį"}
+                        {form.id ? "Save" : "Create indicator"}
                     </button>
                 </div>
             </form>

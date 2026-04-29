@@ -1,29 +1,31 @@
-export default function DeleteModal({ rodiklis, onConfirm, onCancel }) {
+export default function DeleteModal({ indicator, onConfirm, onCancel }) {
     return (
         <div style={overlay}>
             <div style={modal}>
                 <div style={modalHeader}>
-                    <strong>Ištrinti rodiklį?</strong>
+                    <strong>Delete indicator?</strong>
                 </div>
 
                 <div style={modalBody}>
-                    Ar tikrai norite ištrinti{" "}
-                    <strong>„{rodiklis.pavadinimas}“</strong>?
+                    Are you sure you want to delete{" "}
+                    <strong>“{indicator.name}”</strong>?
                     <br />
-                    Šio veiksmo negalima atšaukti.
+                    This action cannot be undone.
                 </div>
 
                 <div style={modalFooter}>
-                    <button onClick={onCancel}>Atšaukti</button>
+                    <button onClick={onCancel}>Cancel</button>
 
                     <button onClick={onConfirm} style={deleteButton}>
-                        Ištrinti
+                        Delete
                     </button>
                 </div>
             </div>
         </div>
     );
 }
+
+// ✅ missing styles added here
 
 const overlay = {
     position: "fixed",
@@ -32,7 +34,7 @@ const overlay = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 100,
+    zIndex: 1000,
 };
 
 const modal = {
