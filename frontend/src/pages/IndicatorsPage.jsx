@@ -29,10 +29,8 @@ export default function IndicatorsPage() {
             body: JSON.stringify(data),
         });
 
-        const updated = await fetchAll();
-        setIndicators(updated);
-
         setEditing(null);
+        await fetchAll();
     };
 
     const handleDelete = async () => {
@@ -40,10 +38,8 @@ export default function IndicatorsPage() {
             method: "DELETE",
         });
 
-        const updated = await fetchAll();
-        setIndicators(updated);
-
         setDeleting(null);
+        await fetchAll();
     };
 
     if (editing !== null) {
