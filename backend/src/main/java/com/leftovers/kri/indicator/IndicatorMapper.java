@@ -10,4 +10,6 @@ public interface IndicatorMapper {
     IndicatorResponse toResponse(Indicator indicator);
 
     Indicator toEntity(CreateIndicatorRequest request);
+
+    void updateEntityFromDto(CreateIndicatorRequest request, @org.mapstruct.MappingTarget Indicator indicator);
 }
