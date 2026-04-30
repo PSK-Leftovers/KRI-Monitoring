@@ -30,13 +30,11 @@ public class IndicatorService {
         Indicator indicator = indicatorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Indicator not found with id: " + id));
 
-        indicator.setName(request.name());
-        indicator.setDescription(request.description());
-        indicator.setGreenThreshold(request.greenThreshold());
-        indicator.setYellowThreshold(request.yellowThreshold());
-        indicator.setRedThreshold(request.redThreshold());
+        indicatorMapper.updateEntityFromDto(request, indicator);
 
-        return indicatorMapper.toResponse(indicatorRepository.save(indicator));
+        Indicator saved = indicatorRepository.save(indicator);
+
+        return indicatorMapper.toResponse(saved);
     }
 
     public void delete(Long id) {
