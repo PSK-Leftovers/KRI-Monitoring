@@ -25,8 +25,6 @@ export default function DeleteModal({ indicator, onConfirm, onCancel }) {
     );
 }
 
-// ✅ missing styles added here
-
 const overlay = {
     position: "fixed",
     inset: 0,
