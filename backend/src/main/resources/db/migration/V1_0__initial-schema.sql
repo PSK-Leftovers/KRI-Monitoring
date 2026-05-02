@@ -15,5 +15,6 @@ CREATE TABLE indicator
     green_threshold  DOUBLE PRECISION,
     yellow_threshold DOUBLE PRECISION,
     red_threshold    DOUBLE PRECISION,
+    status           VARCHAR(20) NOT NULL DEFAULT 'UNKNOWN',
     CONSTRAINT pk_indicator PRIMARY KEY (id)
 );
