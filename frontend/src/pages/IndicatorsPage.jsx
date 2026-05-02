@@ -4,6 +4,20 @@ import DeleteModal from "../components/DeleteModal";
 
 const API = "http://localhost:8080/api/indicators";
 
+const STATUS_STYLES = {
+    GREEN:   "bg-green-100 text-green-700",
+    YELLOW:  "bg-yellow-100 text-yellow-700",
+    RED:     "bg-red-100 text-red-700",
+    UNKNOWN: "bg-gray-100 text-gray-500",
+};
+
+const STATUS_LABELS = {
+    GREEN:   "Žalia",
+    YELLOW:  "Geltona",
+    RED:     "Raudona",
+    UNKNOWN: "Nežinoma",
+};
+
 export default function IndicatorsPage() {
     const [indicators, setIndicators] = useState([]);
     const [editing, setEditing] = useState(null);
@@ -77,6 +91,9 @@ export default function IndicatorsPage() {
                                     Aprašymas
                                 </th>
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                    Statusas
+                                </th>
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                     Ribos
                                 </th>
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -87,7 +104,7 @@ export default function IndicatorsPage() {
                         <tbody>
                             {indicators.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-16 text-center text-gray-400 text-sm">
+                                    <td colSpan="5" className="px-6 py-16 text-center text-gray-400 text-sm">
                                         Indikatorių nėra.{" "}
                                         <button onClick={() => setEditing({})} className="text-brand-700 hover:underline">
                                             Sukurkite pirmąjį indikatorių.
@@ -107,6 +124,11 @@ export default function IndicatorsPage() {
                                             {indicator.description || (
                                                 <span className="text-gray-300 italic">—</span>
                                             )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[indicator.status] ?? STATUS_STYLES.UNKNOWN}`}>
+                                                {STATUS_LABELS[indicator.status] ?? indicator.status}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-1.5">
