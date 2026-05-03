@@ -11,7 +11,7 @@ export default function IndicatorsPage() {
     const [deleting, setDeleting] = useState(null);
 
     const fetchAll = async () => {
-        const response = await fetch(API);
+        const response = await fetch(API, {credentials: "include"});
         return response.json();
     };
 
@@ -27,6 +27,7 @@ export default function IndicatorsPage() {
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
+            credentials: "include"
         });
 
         const updated = await fetchAll();
@@ -38,6 +39,8 @@ export default function IndicatorsPage() {
     const handleDelete = async () => {
         await fetch(`${API}/${deleting.id}`, {
             method: "DELETE",
+            credentials: "include"
+            
         });
 
         const updated = await fetchAll();
