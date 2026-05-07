@@ -1,71 +1,24 @@
 export default function DeleteModal({ indicator, onConfirm, onCancel }) {
     return (
-        <div style={overlay}>
-            <div style={modal}>
-                <div style={modalHeader}>
-                    <strong>Delete indicator?</strong>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
+                <div className="p-6">
+                    <h2 className="text-base font-semibold text-gray-900">
+                        Ištrinti indikatorių?
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Ar jūs esate tikras, kad norite ištrinti{" "}<strong className="text-gray-700">"{indicator.name}"</strong>? Šio veiksmo nebus galima sugrąžinti.
+                    </p>
                 </div>
-
-                <div style={modalBody}>
-                    Are you sure you want to delete{" "}
-                    <strong>“{indicator.name}”</strong>?
-                    <br />
-                    This action cannot be undone.
-                </div>
-
-                <div style={modalFooter}>
-                    <button onClick={onCancel}>Cancel</button>
-
-                    <button onClick={onConfirm} style={deleteButton}>
-                        Delete
+                <div className="px-6 pb-6 flex justify-end gap-2">
+                    <button onClick={onCancel} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                        Atšaukti
+                    </button>
+                    <button onClick={onConfirm} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors cursor-pointer">
+                        Ištrinti
                     </button>
                 </div>
             </div>
         </div>
     );
 }
-
-const overlay = {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.4)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1000,
-};
-
-const modal = {
-    background: "#fff",
-    borderRadius: "12px",
-    width: "360px",
-    overflow: "hidden",
-};
-
-const modalHeader = {
-    padding: "16px",
-    borderBottom: "1px solid #eee",
-};
-
-const modalBody = {
-    padding: "16px",
-    fontSize: "14px",
-    color: "#555",
-};
-
-const modalFooter = {
-    padding: "12px 16px",
-    borderTop: "1px solid #eee",
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "8px",
-};
-
-const deleteButton = {
-    background: "#FCEBEB",
-    color: "#A32D2D",
-    border: "1px solid #F09595",
-    padding: "6px 14px",
-    borderRadius: "6px",
-    cursor: "pointer",
-};

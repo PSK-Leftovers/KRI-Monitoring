@@ -23,4 +23,8 @@ public class Indicator {
     private Double greenThreshold;
     private Double yellowThreshold;
     private Double redThreshold;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private IndicatorStatus status = IndicatorStatus.UNKNOWN;
 }

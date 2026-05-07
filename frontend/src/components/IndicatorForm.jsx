@@ -11,15 +11,11 @@ export default function IndicatorForm({ initial, onSave, onCancel }) {
     });
 
     const set = (key) => (event) => {
-        setForm((current) => ({
-            ...current,
-            [key]: event.target.value,
-        }));
+        setForm((current) => ({ ...current, [key]: event.target.value }));
     };
 
     const handleSubmit = (event) => {
         event.preventDefault();
-
         onSave({
             ...form,
             greenThreshold: Number(form.greenThreshold),
@@ -28,142 +24,108 @@ export default function IndicatorForm({ initial, onSave, onCancel }) {
         });
     };
 
+    const inputClass = "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-700 focus:border-transparent";
+
+    const thresholds = [
+        {
+            key: "greenThreshold",
+            label: "Žalia riba",
+            color: "text-green-700",
+            border: "border-green-200",
+            bg: "bg-green-50",
+            ring: "focus:ring-green-600",
+        },
+        {
+            key: "yellowThreshold",
+            label: "Geltona riba",
+            color: "text-yellow-700",
+            border: "border-yellow-200",
+            bg: "bg-yellow-50",
+            ring: "focus:ring-yellow-600",
+        },
+        {
+            key: "redThreshold",
+            label: "Raudona riba",
+            color: "text-red-700",
+            border: "border-red-200",
+            bg: "bg-red-50",
+            ring: "focus:ring-red-600",
+        },
+    ];
+
     return (
-        <div style={page}>
-            <button onClick={onCancel} style={backButton}>
-                ← Back
-            </button>
+        <div className="min-h-screen bg-gray-50 px-6 py-8">
+            <div className="max-w-2xl mx-auto">
+                <button onClick={onCancel} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6 cursor-pointer">
+                    ← Atgal
+                </button>
 
-            <h1 style={title}>
-                {form.id ? "Edit indicator" : "New indicator"}
-            </h1>
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+                    <h1 className="text-xl font-bold text-gray-900 mb-6">
+                        {form.id ? "Redaguoti indikatorių" : "Naujas indikatorius"}
+                    </h1>
 
-            <form onSubmit={handleSubmit} style={formStyle}>
-                <div>
-                    <label>Name *</label>
-                    <input
-                        required
-                        value={form.name}
-                        onChange={set("name")}
-                        placeholder="Enter name"
-                        style={input}
-                    />
-                </div>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Pavadinimas <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                required
+                                value={form.name}
+                                onChange={set("name")}
+                                placeholder="pvz. Pajamų rizika"
+                                className={inputClass}
+                            />
+                        </div>
 
-                <div>
-                    <label>Description</label>
-                    <textarea
-                        value={form.description || ""}
-                        onChange={set("description")}
-                        placeholder="Short description..."
-                        style={textarea}
-                    />
-                </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Aprašymas
+                            </label>
+                            <textarea
+                                value={form.description || ""}
+                                onChange={set("description")}
+                                placeholder="Pvz. Indikatorius yra skirtas pajamų rizikos stebėjimui"
+                                rows={3}
+                                className={`${inputClass} resize-none`}
+                            />
+                        </div>
 
-                <div>
-                    <label>Risk thresholds *</label>
-
-                    <div style={limitsGrid}>
-                        {[
-                            ["greenThreshold", "Green threshold", "#27500A"],
-                            ["yellowThreshold", "Yellow threshold", "#633806"],
-                            ["redThreshold", "Red threshold", "#A32D2D"],
-                        ].map(([key, label, color]) => (
-                            <div key={key} style={limitBox(color)}>
-                                <label style={{ fontSize: "12px", color, fontWeight: 500 }}>
-                                    {label}
-                                </label>
-                                <input
-                                    required
-                                    type="number"
-                                    value={form[key]}
-                                    onChange={set(key)}
-                                    placeholder="e.g. 100"
-                                    style={input}
-                                />
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Indikatoriaus ribos <span className="text-red-500">*</span>
+                            </label>
+                            <div className="grid grid-cols-3 gap-3">
+                                {thresholds.map(({ key, label, color, border, bg, ring }) => (
+                                    <div key={key} className={`border ${border} ${bg} rounded-lg p-3`}>
+                                        <label className={`block text-xs font-semibold ${color} mb-1.5`}>
+                                            {label}
+                                        </label>
+                                        <input
+                                            required
+                                            type="number"
+                                            value={form[key]}
+                                            onChange={set(key)}
+                                            placeholder="pvz. 100"
+                                            className={`w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 bg-white focus:outline-none focus:ring-2 ${ring} focus:border-transparent`}
+                                        />
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                </div>
+                        </div>
 
-                <div style={actions}>
-                    <button type="button" onClick={onCancel}>
-                        Cancel
-                    </button>
-
-                    <button type="submit" style={submitButton}>
-                        {form.id ? "Save" : "Create indicator"}
-                    </button>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button type="button" onClick={onCancel} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                                Atšaukti
+                            </button>
+                            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-brand-700 rounded-lg hover:bg-brand-800 transition-colors cursor-pointer">
+                                {form.id ? "Išsaugoti pakeitimus" : "Sukurti indikatorių"}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     );
 }
-
-const page = {
-    padding: "1.5rem",
-    maxWidth: "650px",
-    fontFamily: "Arial, sans-serif",
-};
-
-const backButton = {
-    marginBottom: "1rem",
-};
-
-const title = {
-    fontSize: "22px",
-    fontWeight: 600,
-    marginBottom: "1.25rem",
-};
-
-const formStyle = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-};
-
-const input = {
-    display: "block",
-    width: "100%",
-    boxSizing: "border-box",
-    marginTop: "4px",
-    padding: "8px",
-};
-
-const textarea = {
-    display: "block",
-    width: "100%",
-    boxSizing: "border-box",
-    marginTop: "4px",
-    height: "72px",
-    padding: "8px",
-};
-
-const limitsGrid = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gap: "10px",
-    marginTop: "6px",
-};
-
-const limitBox = (color) => ({
-    border: `1px solid ${color}33`,
-    borderRadius: "6px",
-    padding: "8px",
-});
-
-const actions = {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "8px",
-    marginTop: "8px",
-};
-
-const submitButton = {
-    background: "#3A2A6E",
-    color: "#fff",
-    border: "none",
-    padding: "8px 16px",
-    borderRadius: "6px",
-    cursor: "pointer",
-};
