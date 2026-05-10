@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import IndicatorForm from "../components/IndicatorForm.jsx";
 import DeleteModal from "../components/DeleteModal";
+import ValueEntryModal from "../components/ValueEntryModal.jsx";
 
 const API = "http://localhost:8080/api/indicators";
 
@@ -22,6 +23,7 @@ export default function IndicatorsPage() {
     const [indicators, setIndicators] = useState([]);
     const [editing, setEditing] = useState(null);
     const [deleting, setDeleting] = useState(null);
+    const [recordingValue, setRecordingValue] = useState(null);
 
     const fetchAll = async () => {
         const response = await fetch(API, {credentials: "include"});
@@ -52,12 +54,25 @@ export default function IndicatorsPage() {
         await fetch(`${API}/${deleting.id}`, {
             method: "DELETE",
             credentials: "include"
-            
+
         });
 
         const updated = await fetchAll();
         setIndicators(updated);
         setDeleting(null);
+    };
+
+    const handleRecordValue = async (value) => {
+        await fetch(`${API}/${recordingValue.id}/values`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ value }),
+            credentials: "include",
+        });
+
+        const updated = await fetchAll();
+        setIndicators(updated);
+        setRecordingValue(null);
     };
 
     if (editing !== null) {
@@ -96,6 +111,9 @@ export default function IndicatorsPage() {
                                     Aprašymas
                                 </th>
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                    Dabartinė vertė
+                                </th>
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                     Statusas
                                 </th>
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -109,7 +127,7 @@ export default function IndicatorsPage() {
                         <tbody>
                             {indicators.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-16 text-center text-gray-400 text-sm">
+                                    <td colSpan="6" className="px-6 py-16 text-center text-gray-400 text-sm">
                                         Indikatorių nėra.{" "}
                                         <button onClick={() => setEditing({})} className="text-brand-700 hover:underline">
                                             Sukurkite pirmąjį indikatorių.
@@ -128,6 +146,15 @@ export default function IndicatorsPage() {
                                         <td className="px-6 py-4 text-gray-500 max-w-xs truncate">
                                             {indicator.description || (
                                                 <span className="text-gray-300 italic">—</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {indicator.latestValue != null ? (
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[indicator.status] ?? STATUS_STYLES.UNKNOWN}`}>
+                                                    {indicator.latestValue}
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs text-gray-400 italic">Nėra duomenų</span>
                                             )}
                                         </td>
                                         <td className="px-6 py-4">
@@ -150,6 +177,9 @@ export default function IndicatorsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
+                                                <button onClick={() => setRecordingValue(indicator)} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
+                                                    Įvesti
+                                                </button>
                                                 <button onClick={() => setEditing(indicator)} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
                                                     Redaguoti
                                                 </button>
@@ -171,6 +201,14 @@ export default function IndicatorsPage() {
                     indicator={deleting}
                     onConfirm={handleDelete}
                     onCancel={() => setDeleting(null)}
+                />
+            )}
+
+            {recordingValue && (
+                <ValueEntryModal
+                    indicator={recordingValue}
+                    onSave={handleRecordValue}
+                    onCancel={() => setRecordingValue(null)}
                 />
             )}
         </div>
