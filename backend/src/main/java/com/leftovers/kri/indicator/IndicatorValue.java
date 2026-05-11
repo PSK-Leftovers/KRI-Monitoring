@@ -28,6 +28,8 @@ public class IndicatorValue {
 
     @PrePersist
     void prePersist() {
-        if (recordedAt == null) recordedAt = OffsetDateTime.now();
+        if (recordedAt == null) {
+            recordedAt = OffsetDateTime.now();
+        }
     }
 }
