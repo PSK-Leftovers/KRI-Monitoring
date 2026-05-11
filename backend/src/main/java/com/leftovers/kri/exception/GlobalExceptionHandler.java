@@ -1,5 +1,6 @@
 package com.leftovers.kri.exception;
 
+import com.leftovers.kri.exception.EntityAlreadyExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ApiError handleAccessDenied(AccessDeniedException ex) {
         return ApiError.of(HttpStatus.FORBIDDEN.value(), "Access denied");
+    }
+
+    @ExceptionHandler(EntityAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleEntityAlreadyExists(EntityAlreadyExistsException ex) {
+        return ApiError.of(HttpStatus.CONFLICT.value(), ex.getMessage());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
