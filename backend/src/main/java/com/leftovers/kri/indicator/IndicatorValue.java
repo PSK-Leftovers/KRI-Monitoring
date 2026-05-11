@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "indicator_value")
@@ -24,12 +24,12 @@ public class IndicatorValue {
     private Double value;
 
     @Column(nullable = false)
-    private OffsetDateTime recordedAt;
+    private Instant recordedAt;
 
     @PrePersist
     void prePersist() {
         if (recordedAt == null) {
-            recordedAt = OffsetDateTime.now();
+            recordedAt = Instant.now();
         }
     }
 }
