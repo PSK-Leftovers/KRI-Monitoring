@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import IndicatorForm from "../components/IndicatorForm.jsx";
 import DeleteModal from "../components/DeleteModal";
 import ValueEntryModal from "../components/ValueEntryModal.jsx";
+import IndicatorValuesGraph from "../components/IndicatorValuesGraph.jsx";
 
 const API = "http://localhost:8080/api/indicators";
 
@@ -24,6 +25,8 @@ export default function IndicatorsPage() {
     const [editing, setEditing] = useState(null);
     const [deleting, setDeleting] = useState(null);
     const [recordingValue, setRecordingValue] = useState(null);
+    const [graphIndicator, setGraphIndicator] = useState(null);
+    const [graphData, setGraphData] = useState([]);
 
     const fetchAll = async () => {
         const response = await fetch(API, {credentials: "include"});
@@ -73,6 +76,22 @@ export default function IndicatorsPage() {
         const updated = await fetchAll();
         setIndicators(updated);
         setRecordingValue(null);
+    };
+
+    const openGraph = async (indicator) => {
+        setGraphIndicator(indicator);
+
+        const res = await fetch(`${API}/${indicator.id}/values`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include"
+        });
+
+        const data = await res.json();
+
+        setGraphData(data);
     };
 
     if (editing !== null) {
@@ -138,6 +157,7 @@ export default function IndicatorsPage() {
                                 indicators.map((indicator) => (
                                     <tr
                                         key={indicator.id}
+                                        onClick={() => openGraph(indicator)}
                                         className="border-t border-gray-100 hover:bg-gray-50 transition-colors"
                                     >
                                         <td className="px-6 py-4 font-medium text-gray-900">
@@ -210,6 +230,32 @@ export default function IndicatorsPage() {
                     onSave={handleRecordValue}
                     onCancel={() => setRecordingValue(null)}
                 />
+            )}
+
+            {graphIndicator && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-lg w-[800px] h-[450px] p-6 relative">
+
+                        <button
+                            onClick={() => setGraphIndicator(null)}
+                            className="absolute top-3 right-3 text-gray-500 hover:text-black"
+                        >
+                            ✕
+                        </button>
+
+                        <h2 className="text-lg font-semibold mb-4">
+                            {graphIndicator.name} istorija
+                        </h2>
+
+                        {graphData.length > 0 ? (
+                            <IndicatorValuesGraph graphData={graphData} />
+                        ) : (
+                            <div className="flex items-center justify-center h-[350px] text-gray-500">
+                                Nėra duomenų
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );
