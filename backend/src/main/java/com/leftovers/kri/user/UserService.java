@@ -24,11 +24,8 @@ public class UserService {
             throw new EntityAlreadyExistsException("User with email " + request.email() + " already exists");
         }
 
-        User user = new User();
-        user.setName(request.name());
-        user.setEmail(request.email());
+        User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.password()));
-        user.setRole(request.role());
 
         return userMapper.toResponse(userRepository.save(user));
     }

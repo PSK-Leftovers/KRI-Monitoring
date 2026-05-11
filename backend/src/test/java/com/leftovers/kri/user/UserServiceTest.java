@@ -34,19 +34,21 @@ class UserServiceTest {
     @Test
     void createUser_savesWithEncodedPassword() {
         CreateUserRequest request = new CreateUserRequest("Jonas", "jonas@example.com", "password123", "ANALYST");
-        User saved = user(1L, "Jonas", "jonas@example.com", "hashed", "ANALYST");
-        UserResponse response = response(1L, "Jonas", "jonas@example.com", "ANALYST");
+        User mappedUser = User.builder().name("Jonas").email("jonas@example.com").role("ANALYST").build();
+        User savedUser = User.builder().id(1L).name("Jonas").email("jonas@example.com").password("hashed").role("ANALYST").build();
+        UserResponse expectedResponse = buildUserResponse(1L, "Jonas", "jonas@example.com", "ANALYST");
 
         when(userRepository.findByEmail("jonas@example.com")).thenReturn(Optional.empty());
+        when(userMapper.toEntity(request)).thenReturn(mappedUser);
         when(passwordEncoder.encode("password123")).thenReturn("hashed");
-        when(userRepository.save(any(User.class))).thenReturn(saved);
-        when(userMapper.toResponse(saved)).thenReturn(response);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userMapper.toResponse(savedUser)).thenReturn(expectedResponse);
 
         UserResponse result = userService.createUser(request);
 
-        assertThat(result).isEqualTo(response);
+        assertThat(result).isEqualTo(expectedResponse);
         verify(passwordEncoder).encode("password123");
-        verify(userRepository).save(argThat(u -> u.getPassword().equals("hashed")));
+        verify(userRepository).save(argThat(u -> "hashed".equals(u.getPassword())));
     }
 
     @Test
@@ -64,16 +66,16 @@ class UserServiceTest {
 
     @Test
     void listUsers_returnsMappedList() {
-        User u1 = user(1L, "Jonas", "jonas@example.com", "hashed", "ANALYST");
-        User u2 = user(2L, "Mantas", "mantas@example.com", "hashed", "DIRECTOR");
-        UserResponse r1 = response(1L, "Jonas", "jonas@example.com", "ANALYST");
-        UserResponse r2 = response(2L, "Mantas", "mantas@example.com", "DIRECTOR");
+        User jonas = User.builder().id(1L).name("Jonas").email("jonas@example.com").role("ANALYST").build();
+        User mantas = User.builder().id(2L).name("Mantas").email("mantas@example.com").role("DIRECTOR").build();
+        UserResponse jonasResponse = buildUserResponse(1L, "Jonas", "jonas@example.com", "ANALYST");
+        UserResponse mantasResponse = buildUserResponse(2L, "Mantas", "mantas@example.com", "DIRECTOR");
 
-        when(userRepository.findAll()).thenReturn(List.of(u1, u2));
-        when(userMapper.toResponse(u1)).thenReturn(r1);
-        when(userMapper.toResponse(u2)).thenReturn(r2);
+        when(userRepository.findAll()).thenReturn(List.of(jonas, mantas));
+        when(userMapper.toResponse(jonas)).thenReturn(jonasResponse);
+        when(userMapper.toResponse(mantas)).thenReturn(mantasResponse);
 
-        assertThat(userService.listUsers()).containsExactly(r1, r2);
+        assertThat(userService.listUsers()).containsExactly(jonasResponse, mantasResponse);
     }
 
     @Test
@@ -83,19 +85,7 @@ class UserServiceTest {
         assertThat(userService.listUsers()).isEmpty();
     }
 
-    // ── helpers ──────────────────────────────────────────────────────────────
-
-    private User user(Long id, String name, String email, String password, String role) {
-        User u = new User();
-        u.setId(id);
-        u.setName(name);
-        u.setEmail(email);
-        u.setPassword(password);
-        u.setRole(role);
-        return u;
-    }
-
-    private UserResponse response(Long id, String name, String email, String role) {
+    private UserResponse buildUserResponse(Long id, String name, String email, String role) {
         return new UserResponse(id, name, email, role, Instant.now(), null);
     }
 }
