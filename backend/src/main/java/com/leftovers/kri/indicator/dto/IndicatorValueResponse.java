@@ -1,11 +1,11 @@
 package com.leftovers.kri.indicator.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record IndicatorValueResponse(
         Long id,
         Long indicatorId,
         Double value,
-        LocalDateTime recordedAt
+        Instant recordedAt
 ) {
 }
