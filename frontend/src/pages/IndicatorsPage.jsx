@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import IndicatorForm from "../components/IndicatorForm.jsx";
 import DeleteModal from "../components/DeleteModal";
 import ValueEntryModal from "../components/ValueEntryModal.jsx";
@@ -24,6 +25,9 @@ export default function IndicatorsPage() {
     const [editing, setEditing] = useState(null);
     const [deleting, setDeleting] = useState(null);
     const [recordingValue, setRecordingValue] = useState(null);
+    
+    const navigate = useNavigate();
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
     const fetchAll = async () => {
         const response = await fetch(API, {credentials: "include"});
@@ -95,9 +99,16 @@ export default function IndicatorsPage() {
                             Sekite ir valdykite savo pagrindinius rizikos indikatorius
                         </p>
                     </div>
-                    <button onClick={() => setEditing({})} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-700 text-white text-sm font-medium rounded-lg hover:bg-brand-800 transition-colors cursor-pointer">
-                        + Naujas indikatorius
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {currentUser.role === "ADMIN" && (
+                            <button onClick={() => navigate("/users")} className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer">
+                                Vartotojai →
+                            </button>
+                        )}
+                        <button onClick={() => setEditing({})} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-700 text-white text-sm font-medium rounded-lg hover:bg-brand-800 transition-colors cursor-pointer">
+                            + Naujas indikatorius
+                        </button>
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
