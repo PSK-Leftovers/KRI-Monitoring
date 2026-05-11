@@ -33,10 +33,13 @@ public class IndicatorValueService {
     private IndicatorStatus computeStatus(Indicator indicator, double value) {
         Double green = indicator.getGreenThreshold();
         Double yellow = indicator.getYellowThreshold();
+
         if (green == null || yellow == null) {
             return IndicatorStatus.UNKNOWN;
         }
+
         boolean higherIsBetter = green > yellow;
+
         if (higherIsBetter) {
             if (value >= green) {
                 return IndicatorStatus.GREEN;
