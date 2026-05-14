@@ -207,13 +207,13 @@ export default function IndicatorsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <button onClick={() => setRecordingValue(indicator)} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
+                                                <button onClick={(e) => { e.stopPropagation(); setRecordingValue(indicator); }} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
                                                     Įvesti
                                                 </button>
-                                                <button onClick={() => setEditing(indicator)} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
+                                                <button onClick={(e) => { e.stopPropagation(); setEditing(indicator); }} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
                                                     Redaguoti
                                                 </button>
-                                                <button onClick={() => setDeleting(indicator)} className="text-xs text-red-600 hover:text-red-700 font-medium hover:underline cursor-pointer">
+                                                <button onClick={(e) => { e.stopPropagation(); setDeleting(indicator); }} className="text-xs text-red-600 hover:text-red-700 font-medium hover:underline cursor-pointer">
                                                     Ištrinti
                                                 </button>
                                             </div>
