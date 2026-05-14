@@ -13,11 +13,18 @@ import java.util.List;
 public class IndicatorService {
 
     private final IndicatorRepository indicatorRepository;
+    private final IndicatorValueRepository indicatorValueRepository;
     private final IndicatorMapper indicatorMapper;
 
     public List<IndicatorResponse> getAll() {
         return indicatorRepository.findAll().stream()
-                .map(indicatorMapper::toResponse)
+                .map(indicator -> {
+                    Double latestValue = indicatorValueRepository
+                            .findTopByIndicatorIdOrderByRecordedAtDesc(indicator.getId())
+                            .map(IndicatorValue::getValue)
+                            .orElse(null);
+                    return indicatorMapper.toResponse(indicator, latestValue);
+                })
                 .toList();
     }
 

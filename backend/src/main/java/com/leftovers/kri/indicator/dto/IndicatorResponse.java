@@ -9,6 +9,7 @@ public record IndicatorResponse(
         Double greenThreshold,
         Double yellowThreshold,
         Double redThreshold,
-        IndicatorStatus status
+        IndicatorStatus status,
+        Double latestValue
 ) {
 }

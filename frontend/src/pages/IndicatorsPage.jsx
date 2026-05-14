@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import IndicatorForm from "../components/IndicatorForm.jsx";
 import DeleteModal from "../components/DeleteModal";
+import ValueEntryModal from "../components/ValueEntryModal.jsx";
+import IndicatorValuesGraph from "../components/IndicatorValuesGraph.jsx";
 
 const API = "http://localhost:8080/api/indicators";
 
@@ -23,6 +25,9 @@ export default function IndicatorsPage() {
     const [indicators, setIndicators] = useState([]);
     const [editing, setEditing] = useState(null);
     const [deleting, setDeleting] = useState(null);
+    const [recordingValue, setRecordingValue] = useState(null);
+    const [graphIndicator, setGraphIndicator] = useState(null);
+    const [graphData, setGraphData] = useState([]);
     const navigate = useNavigate();
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -55,12 +60,41 @@ export default function IndicatorsPage() {
         await fetch(`${API}/${deleting.id}`, {
             method: "DELETE",
             credentials: "include"
-            
+
         });
 
         const updated = await fetchAll();
         setIndicators(updated);
         setDeleting(null);
+    };
+
+    const handleRecordValue = async (value) => {
+        await fetch(`${API}/${recordingValue.id}/values`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ value }),
+            credentials: "include",
+        });
+
+        const updated = await fetchAll();
+        setIndicators(updated);
+        setRecordingValue(null);
+    };
+
+    const openGraph = async (indicator) => {
+        setGraphIndicator(indicator);
+
+        const res = await fetch(`${API}/${indicator.id}/values`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include"
+        });
+
+        const data = await res.json();
+
+        setGraphData(data);
     };
 
     if (editing !== null) {
@@ -106,6 +140,9 @@ export default function IndicatorsPage() {
                                     Aprašymas
                                 </th>
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                    Dabartinė vertė
+                                </th>
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                     Statusas
                                 </th>
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -119,7 +156,7 @@ export default function IndicatorsPage() {
                         <tbody>
                             {indicators.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-16 text-center text-gray-400 text-sm">
+                                    <td colSpan="6" className="px-6 py-16 text-center text-gray-400 text-sm">
                                         Indikatorių nėra.{" "}
                                         <button onClick={() => setEditing({})} className="text-brand-700 hover:underline">
                                             Sukurkite pirmąjį indikatorių.
@@ -130,6 +167,7 @@ export default function IndicatorsPage() {
                                 indicators.map((indicator) => (
                                     <tr
                                         key={indicator.id}
+                                        onClick={() => openGraph(indicator)}
                                         className="border-t border-gray-100 hover:bg-gray-50 transition-colors"
                                     >
                                         <td className="px-6 py-4 font-medium text-gray-900">
@@ -138,6 +176,15 @@ export default function IndicatorsPage() {
                                         <td className="px-6 py-4 text-gray-500 max-w-xs truncate">
                                             {indicator.description || (
                                                 <span className="text-gray-300 italic">—</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {indicator.latestValue != null ? (
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[indicator.status] ?? STATUS_STYLES.UNKNOWN}`}>
+                                                    {indicator.latestValue}
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs text-gray-400 italic">Nėra duomenų</span>
                                             )}
                                         </td>
                                         <td className="px-6 py-4">
@@ -160,10 +207,13 @@ export default function IndicatorsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <button onClick={() => setEditing(indicator)} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
+                                                <button onClick={(e) => { e.stopPropagation(); setRecordingValue(indicator); }} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
+                                                    Įvesti
+                                                </button>
+                                                <button onClick={(e) => { e.stopPropagation(); setEditing(indicator); }} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
                                                     Redaguoti
                                                 </button>
-                                                <button onClick={() => setDeleting(indicator)} className="text-xs text-red-600 hover:text-red-700 font-medium hover:underline cursor-pointer">
+                                                <button onClick={(e) => { e.stopPropagation(); setDeleting(indicator); }} className="text-xs text-red-600 hover:text-red-700 font-medium hover:underline cursor-pointer">
                                                     Ištrinti
                                                 </button>
                                             </div>
@@ -182,6 +232,40 @@ export default function IndicatorsPage() {
                     onConfirm={handleDelete}
                     onCancel={() => setDeleting(null)}
                 />
+            )}
+
+            {recordingValue && (
+                <ValueEntryModal
+                    indicator={recordingValue}
+                    onSave={handleRecordValue}
+                    onCancel={() => setRecordingValue(null)}
+                />
+            )}
+
+            {graphIndicator && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-lg w-[800px] h-[450px] p-6 relative">
+
+                        <button
+                            onClick={() => setGraphIndicator(null)}
+                            className="absolute top-3 right-3 text-gray-500 hover:text-black"
+                        >
+                            ✕
+                        </button>
+
+                        <h2 className="text-lg font-semibold mb-4">
+                            {graphIndicator.name} istorija
+                        </h2>
+
+                        {graphData.length > 0 ? (
+                            <IndicatorValuesGraph graphData={graphData} />
+                        ) : (
+                            <div className="flex items-center justify-center h-[350px] text-gray-500">
+                                Nėra duomenų
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );

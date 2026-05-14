@@ -28,8 +28,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -48,4 +48,4 @@ logging:
 
 app:
   email:
-    from: ${MAIL_FROM}
+    from: ${MAIL_FROM:noreply@localhost}
