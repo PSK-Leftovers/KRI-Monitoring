@@ -19,7 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.leftovers.kri.auth.UserRepository;
+import com.leftovers.kri.user.UserRepository;
 
 import org.springframework.security.core.userdetails.User;
 

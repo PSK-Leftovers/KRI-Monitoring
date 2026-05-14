@@ -1,4 +1,4 @@
-package com.leftovers.kri.auth;
+package com.leftovers.kri.user;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
