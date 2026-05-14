@@ -25,6 +25,18 @@ spring:
     hibernate:
       ddl-auto: validate
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 logging:
   pattern:
     console: "%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z', UTC}){faint} %clr(%5p) %clr([%15.15t]){faint} %clr([%X{requestId:-no-request-id}]){yellow} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
@@ -34,3 +46,6 @@ logging:
     org.hibernate.SQL: INFO
     org.hibernate.orm.jdbc.bind: INFO # Can be set to TRACE for more information.
 
+app:
+  email:
+    from: ${MAIL_FROM}
