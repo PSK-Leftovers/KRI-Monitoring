@@ -31,8 +31,8 @@ public class IndicatorValueService {
     }
 
     private IndicatorStatus computeStatus(Indicator indicator, double value) {
-        Double green = indicator.getGreenThreshold();
-        Double yellow = indicator.getYellowThreshold();
+        Double green = indicator.getThresholds().getGreen();
+        Double yellow = indicator.getThresholds().getYellow();
 
         if (green == null || yellow == null) {
             return IndicatorStatus.UNKNOWN;

@@ -27,9 +27,7 @@ public class Indicator {
     @Column(length = 500)
     private String description;
 
-    private Double greenThreshold;
-    private Double yellowThreshold;
-    private Double redThreshold;
+    private IndicatorThresholds thresholds;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
