@@ -1,6 +1,8 @@
-package com.leftovers.kri.indicator;
+package com.leftovers.kri.indicator.thresholds;
 
 import java.time.Instant;
+
+import com.leftovers.kri.indicator.Indicator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,14 +21,14 @@ import lombok.Setter;
 @Table(name = "indicator_thresholds")
 @Getter
 @Setter
-public class IndicatorThresholds {
+public class Thresholds {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "indicator_id", nullable = false)
-    private Long indicatorId;
+    private Indicator indicator;
 
     @Column(nullable = false)
     private double green;
