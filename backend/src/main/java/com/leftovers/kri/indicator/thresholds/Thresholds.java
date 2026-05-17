@@ -38,11 +38,11 @@ public class Thresholds {
     private double redThreshold;
 
     @Column(nullable = false)
-    private Instant changedAt;
+    private Instant recordedAt;
 
     @PrePersist
     public void setChangedAt() {
-        if (changedAt == null)
-            changedAt = Instant.now();
+        if (recordedAt == null)
+            recordedAt = Instant.now();
     }
 }

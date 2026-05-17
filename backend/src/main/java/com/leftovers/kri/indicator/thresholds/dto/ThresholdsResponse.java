@@ -1,13 +1,10 @@
 package com.leftovers.kri.indicator.thresholds.dto;
 
-import java.time.Instant;
+import java.util.List;
 
 public record ThresholdsResponse(
-    Long id,
-    Long indicatorId,
-    Double greenThreshold,
-    Double yellowThreshold,
-    Double redThreshold,
-    Instant changedAt
+    List<ThresholdChange> green,
+    List<ThresholdChange> yellow,
+    List<ThresholdChange> red
 ) {
 }
