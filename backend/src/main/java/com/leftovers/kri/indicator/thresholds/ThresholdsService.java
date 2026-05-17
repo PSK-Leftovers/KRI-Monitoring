@@ -19,7 +19,7 @@ public class ThresholdsService {
 
     public ThresholdsResponse getThresholdChangesByIndicatorId(Long indicatorId, Instant after, Instant before) {
         Stream<Thresholds> thresholdsHistory = thresholdsRepository
-            .findAllByIndicatorIdOrderByChangedAtDesc(indicatorId)
+            .findAllByIndicatorIdOrderByRecordedAtDesc(indicatorId)
             .stream();
         
         if (after != null)

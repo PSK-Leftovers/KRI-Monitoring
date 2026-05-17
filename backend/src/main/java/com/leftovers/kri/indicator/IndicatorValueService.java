@@ -35,7 +35,7 @@ public class IndicatorValueService {
     }
 
     private IndicatorStatus computeStatus(Indicator indicator, double value) {
-        Thresholds thresholds = thresholdsRepository.findTopByIndicatorIdOrderByChangedAtDesc(indicator.getId())
+        Thresholds thresholds = thresholdsRepository.findTopByIndicatorIdOrderByRecordedAtDesc(indicator.getId())
             .orElseThrow(() -> new EntityNotFoundException("Thresholds not found for indicator with id: " + indicator.getId()));
 
         boolean higherIsBetter = thresholds.getGreenThreshold() > thresholds.getYellowThreshold();

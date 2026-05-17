@@ -31,7 +31,7 @@ public class IndicatorService {
                             .orElse(null);
 
                     Thresholds latestThresholds = thresholdsRepository
-                            .findTopByIndicatorIdOrderByChangedAtDesc(indicator.getId())
+                            .findTopByIndicatorIdOrderByRecordedAtDesc(indicator.getId())
                             .orElse(null);
 
                     return indicatorMapper.toResponse(
