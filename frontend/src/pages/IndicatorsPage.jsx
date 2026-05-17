@@ -27,9 +27,12 @@ export default function IndicatorsPage() {
     const [deleting, setDeleting] = useState(null);
     const [recordingValue, setRecordingValue] = useState(null);
     const [graphIndicator, setGraphIndicator] = useState(null);
+    const [allHistoricIndicatorData, setAllHistoricIndicatorData] = useState([]);
     const [graphData, setGraphData] = useState([]);
     const navigate = useNavigate();
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const [fromDate, setFromDate] = useState("");
+    const [toDate, setToDate] = useState("");
 
     const fetchAll = async () => {
         const response = await fetch(API, {credentials: "include"});
@@ -94,7 +97,28 @@ export default function IndicatorsPage() {
 
         const data = await res.json();
 
+        setAllHistoricIndicatorData(data);
         setGraphData(data);
+    };
+
+    const handleFilter = () => {
+        const from = fromDate ? new Date(fromDate) : null;
+        const to = toDate ? new Date(toDate) : null;
+
+        if (to) {
+            to.setDate(to.getDate() + 1);
+        }
+
+        const filtered = allHistoricIndicatorData.filter((item) => {
+            const recorded = new Date(item.recordedAt);
+
+            return (
+                (!from || recorded >= from) &&
+                (!to || recorded < to)
+            );
+        });
+
+        setGraphData(filtered);
     };
 
     if (editing !== null) {
@@ -244,10 +268,10 @@ export default function IndicatorsPage() {
 
             {graphIndicator && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl shadow-lg w-[800px] h-[450px] p-6 relative">
+                    <div className="bg-white rounded-xl shadow-lg w-[800px] h-[500px] p-6 relative">
 
                         <button
-                            onClick={() => setGraphIndicator(null)}
+                            onClick={() => { setGraphIndicator(null); setFromDate(""); setToDate(""); setGraphData([]);}}
                             className="absolute top-3 right-3 text-gray-500 hover:text-black"
                         >
                             ✕
@@ -258,12 +282,63 @@ export default function IndicatorsPage() {
                         </h2>
 
                         {graphData.length > 0 ? (
-                            <IndicatorValuesGraph graphData={graphData} />
+                            <div className="flex-col">
+                                <IndicatorValuesGraph graphData={graphData} greenThreshold={graphIndicator.greenThreshold} yellowThreshold={graphIndicator.yellowThreshold} redThreshold={graphIndicator.redThreshold} />
+
+                                <div className="flex gap-4">
+
+                                    <h2 className="text-lg text-gray-600 mt-3">
+                                        Filtravimas:
+                                    </h2>
+
+                                    <div className="flex">
+                                        <label className="text-sm text-gray-700 mt-3 pl-12 pr-4">
+                                            Nuo:
+                                        </label>
+
+                                        <input
+                                            type="date"
+                                            value={fromDate}
+                                            onChange={(e) => setFromDate(e.target.value)}
+                                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+
+                                    <div className="flex">
+                                        <label className="text-sm text-gray-700 mt-3 pl-6 pr-4">
+                                            Iki:
+                                        </label>
+
+                                        <input
+                                            type="date"
+                                            value={toDate}
+                                            onChange={(e) => setToDate(e.target.value)}
+                                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    
+                                    <button
+                                        onClick={handleFilter}
+                                        className="
+                                            bg-blue-600
+                                            text-white
+                                            px-4
+                                            py-2
+                                            rounded-lg
+                                            hover:bg-blue-700
+                                            ml-4
+                                        "
+                                    >
+                                        Filtruoti
+                                    </button>
+                                </div>
+                            </div>
                         ) : (
                             <div className="flex items-center justify-center h-[350px] text-gray-500">
                                 Nėra duomenų
                             </div>
                         )}
+                        
                     </div>
                 </div>
             )}
