@@ -31,11 +31,11 @@ public class Thresholds {
     private Indicator indicator;
 
     @Column(nullable = false)
-    private double green;
+    private double greenThreshold;
     @Column(nullable = false)
-    private double yellow;
+    private double yellowThreshold;
     @Column(nullable = false)
-    private double red;
+    private double redThreshold;
 
     @Column(nullable = false)
     private Instant changedAt;

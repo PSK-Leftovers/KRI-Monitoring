@@ -2,6 +2,10 @@ package com.leftovers.kri.indicator;
 
 import com.leftovers.kri.indicator.dto.CreateIndicatorRequest;
 import com.leftovers.kri.indicator.dto.IndicatorResponse;
+import com.leftovers.kri.indicator.thresholds.Thresholds;
+import com.leftovers.kri.indicator.thresholds.ThresholdsMapper;
+import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,10 +15,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class IndicatorService {
-
     private final IndicatorRepository indicatorRepository;
     private final IndicatorValueRepository indicatorValueRepository;
     private final IndicatorMapper indicatorMapper;
+    private final ThresholdsMapper thresholdsMapper;
+    private final ThresholdsRepository thresholdsRepository;
+
 
     public List<IndicatorResponse> getAll() {
         return indicatorRepository.findAll().stream()
@@ -23,14 +29,29 @@ public class IndicatorService {
                             .findTopByIndicatorIdOrderByRecordedAtDesc(indicator.getId())
                             .map(IndicatorValue::getValue)
                             .orElse(null);
-                    return indicatorMapper.toResponse(indicator, latestValue);
+
+                    Thresholds latestThresholds = thresholdsRepository
+                            .findTopByIndicatorIdOrderByChangedAtDesc(indicator.getId())
+                            .orElse(null);
+
+                    return indicatorMapper.toResponse(
+                        indicator,
+                        latestValue,
+                        latestThresholds
+                    );
                 })
                 .toList();
     }
 
     public IndicatorResponse create(CreateIndicatorRequest request) {
-        Indicator saved = indicatorRepository.save(indicatorMapper.toEntity(request));
-        return indicatorMapper.toResponse(saved);
+        Indicator indicator = indicatorRepository.save(indicatorMapper.toEntity(request));
+        
+        Thresholds thresholds = thresholdsRepository.save(thresholdsMapper.toEntity(request, indicator));
+
+        return indicatorMapper.toResponse(
+            indicator,
+            thresholds
+        );
     }
 
     public IndicatorResponse update(Long id, CreateIndicatorRequest request) {
@@ -41,7 +62,12 @@ public class IndicatorService {
 
         Indicator saved = indicatorRepository.save(indicator);
 
-        return indicatorMapper.toResponse(saved);
+        Thresholds thresholds = thresholdsRepository.save(thresholdsMapper.toEntity(request, indicator));
+
+        return indicatorMapper.toResponse(
+            saved,
+            thresholds
+        );
     }
 
     public void delete(Long id) {

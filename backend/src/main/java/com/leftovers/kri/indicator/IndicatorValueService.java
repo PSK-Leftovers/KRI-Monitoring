@@ -2,6 +2,9 @@ package com.leftovers.kri.indicator;
 
 import com.leftovers.kri.indicator.dto.CreateIndicatorValueRequest;
 import com.leftovers.kri.indicator.dto.IndicatorValueResponse;
+import com.leftovers.kri.indicator.thresholds.Thresholds;
+import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,7 @@ public class IndicatorValueService {
     private final IndicatorRepository indicatorRepository;
     private final IndicatorValueRepository indicatorValueRepository;
     private final IndicatorValueMapper indicatorValueMapper;
+    private final ThresholdsRepository thresholdsRepository;
 
     @Transactional
     public IndicatorValueResponse create(Long indicatorId, CreateIndicatorValueRequest request) {
@@ -31,28 +35,24 @@ public class IndicatorValueService {
     }
 
     private IndicatorStatus computeStatus(Indicator indicator, double value) {
-        Double green = indicator.getThresholds().getGreen();
-        Double yellow = indicator.getThresholds().getYellow();
+        Thresholds thresholds = thresholdsRepository.findTopByIndicatorIdOrderByChangedAtDesc(indicator.getId())
+            .orElseThrow(() -> new EntityNotFoundException("Thresholds not found for indicator with id: " + indicator.getId()));
 
-        if (green == null || yellow == null) {
-            return IndicatorStatus.UNKNOWN;
-        }
-
-        boolean higherIsBetter = green > yellow;
+        boolean higherIsBetter = thresholds.getGreenThreshold() > thresholds.getYellowThreshold();
 
         if (higherIsBetter) {
-            if (value >= green) {
+            if (value >= thresholds.getGreenThreshold()) {
                 return IndicatorStatus.GREEN;
             }
-            if (value >= yellow) {
+            if (value >= thresholds.getYellowThreshold()) {
                 return IndicatorStatus.YELLOW;
             }
             return IndicatorStatus.RED;
         } else {
-            if (value <= green) {
+            if (value <= thresholds.getGreenThreshold()) {
                 return IndicatorStatus.GREEN;
             }
-            if (value <= yellow) {
+            if (value <= thresholds.getYellowThreshold()) {
                 return IndicatorStatus.YELLOW;
             }
             return IndicatorStatus.RED;

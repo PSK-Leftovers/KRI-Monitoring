@@ -27,8 +27,6 @@ public class Indicator {
     @Column(length = 500)
     private String description;
 
-    private IndicatorThresholds thresholds;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private IndicatorStatus status = IndicatorStatus.UNKNOWN;
