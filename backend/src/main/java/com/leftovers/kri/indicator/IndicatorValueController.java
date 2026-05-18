@@ -8,8 +8,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,8 +36,11 @@ public class IndicatorValueController {
     }
 
     @GetMapping("/{indicatorId}/values")
-    public List<IndicatorValues> getIndicatorValues(@PathVariable Long indicatorId) {
+    public List<IndicatorValues> getIndicatorValues(@PathVariable Long indicatorId, @RequestParam LocalDate from, @RequestParam LocalDate to) {
 
-        return repository.findByIndicatorIdOrderByRecordedAtAsc(indicatorId);
+        return repository.findByIndicatorIdAndRecordedAtBetweenOrderByRecordedAtAsc(
+            indicatorId,
+            from.atStartOfDay().toInstant(ZoneOffset.UTC),
+            to.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC));
     }
 }
