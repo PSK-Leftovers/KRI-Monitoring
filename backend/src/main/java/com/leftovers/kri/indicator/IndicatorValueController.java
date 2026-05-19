@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class IndicatorValueController {
 
     private final IndicatorValueService indicatorValueService;
-    private final IndicatorValueRepository repository;
 
     @PostMapping("/{indicatorId}/values")
     public IndicatorValueResponse create(
@@ -38,9 +37,7 @@ public class IndicatorValueController {
     @GetMapping("/{indicatorId}/values")
     public List<IndicatorValues> getIndicatorValues(@PathVariable Long indicatorId, @RequestParam LocalDate from, @RequestParam LocalDate to) {
 
-        return repository.findByIndicatorIdAndRecordedAtBetweenOrderByRecordedAtAsc(
-            indicatorId,
-            from.atStartOfDay().toInstant(ZoneOffset.UTC),
-            to.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC));
+        return indicatorValueService.getIndicatorValues(indicatorId, from, to);
     }
+
 }
