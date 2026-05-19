@@ -38,7 +38,8 @@ public class IndicatorValueService {
         boolean hadPreviousValue = oldValue != null;
 
         if (hadPreviousValue && oldStatus != newStatus) {
-            indicatorNotificationService.sendNotification(oldStatus, newStatus, oldValue, newValue);
+            indicatorNotificationService.sendNotification(indicator.getName(), indicator.getDescription(),
+                    oldStatus, newStatus, oldValue, newValue);
         }
 
         indicator.setStatus(newStatus);

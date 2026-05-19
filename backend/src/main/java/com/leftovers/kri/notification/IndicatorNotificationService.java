@@ -16,7 +16,8 @@ public class IndicatorNotificationService {
     private final EmailService emailService;
     private final UserRepository userRepository;
 
-    public void sendNotification(IndicatorStatus oldStatus, IndicatorStatus newStatus,
+    public void sendNotification(String indicatorName, String indicatorDescription,
+                                 IndicatorStatus oldStatus, IndicatorStatus newStatus,
                                  Double oldValue, Double newValue) {
         String oldTranslatedStatus = translateStatus(oldStatus);
         String newTranslatedStatus = translateStatus(newStatus);
@@ -26,10 +27,15 @@ public class IndicatorNotificationService {
 
         String body = """
                 Sveiki,
+                
+                Indikatorius: %s.
+                %s
 
                 Indikatoriaus būsena pasikeitė: %s į %s.
                 Indikatoriaus reikšmė pasikeitė: %s į %s.
-                """.formatted(oldTranslatedStatus, newTranslatedStatus, oldValue, newValue);
+                """.formatted(indicatorName, indicatorDescription,
+                    oldTranslatedStatus, newTranslatedStatus,
+                    oldValue, newValue);
 
         userRepository.findAllByRole(ANALYST_ROLE)
                 .stream()
