@@ -31,28 +31,28 @@ public class IndicatorValueService {
     }
 
     private IndicatorStatus computeStatus(Indicator indicator, double value) {
+        Double green = indicator.getGreenThreshold();
         Double yellow = indicator.getYellowThreshold();
-        Double red = indicator.getRedThreshold();
 
-        if (yellow == null || red == null) {
+        if (green == null || yellow == null) {
             return IndicatorStatus.UNKNOWN;
         }
 
-        boolean higherIsBetter = yellow > red;
+        boolean higherIsBetter = green > yellow;
 
         if (higherIsBetter) {
-            if (value >= yellow) {
+            if (value >= green) {
                 return IndicatorStatus.GREEN;
             }
-            if (value >= red) {
+            if (value >= yellow) {
                 return IndicatorStatus.YELLOW;
             }
             return IndicatorStatus.RED;
         } else {
-            if (value <= yellow) {
+            if (value <= green) {
                 return IndicatorStatus.GREEN;
             }
-            if (value <= red) {
+            if (value <= yellow) {
                 return IndicatorStatus.YELLOW;
             }
             return IndicatorStatus.RED;
