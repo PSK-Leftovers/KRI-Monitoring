@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -20,16 +21,21 @@ public class SmtpEmailService implements EmailService {
         this.fromAddress = fromAddress;
     }
 
+    @Async
     public void sendEmail(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom(fromAddress);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
+            message.setFrom(fromAddress);
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(body);
 
-        mailSender.send(message);
+            mailSender.send(message);
 
-        log.info("Email sent to={} with subject={}", to, subject);
+            log.info("Email sent to={} with subject={}", to, subject);
+        } catch (Exception exception) {
+            log.error("Failed to send email to={} with subject={}", to, subject, exception);
+        }
     }
 }

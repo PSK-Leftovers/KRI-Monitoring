@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -19,24 +21,31 @@ public class IndicatorNotificationService {
     public void sendNotification(String indicatorName, String indicatorDescription,
                                  IndicatorStatus oldStatus, IndicatorStatus newStatus,
                                  Double oldValue, Double newValue) {
+
         String oldStatusDisplayName = oldStatus.getDisplayName();
         String newStatusDisplayName = newStatus.getDisplayName();
 
         String subject = buildSubject(oldStatusDisplayName, newStatusDisplayName);
         String body = buildBody(indicatorName, indicatorDescription, oldStatusDisplayName, newStatusDisplayName, oldValue, newValue);
 
-        userRepository.findAllByRole(ANALYST_ROLE)
+        List<String> recipientEmails = userRepository.findAllByRole(ANALYST_ROLE)
                 .stream()
                 .map(User::getEmail)
                 .distinct()
-                .forEach(email -> {
-                    try {
-                        emailService.sendEmail(email, subject, body);
-                        log.info("Email sent to={} with subject={}", email, subject);
-                    } catch (Exception exception) {
-                        log.error("Failed to send indicator notification to={}", email, exception);
-                    }
-                });
+                .toList();
+
+        log.info("Sending indicator notifications: indicatorName={}, oldStatus={}, newStatus={}, oldValue={}, newValue={}, recipientCount={}",
+                indicatorName,
+                oldStatus,
+                newStatus,
+                oldValue,
+                newValue,
+                recipientEmails.size()
+        );
+
+        recipientEmails.forEach(email -> {
+            emailService.sendEmail(email, subject, body);
+        });
     }
 
     private String buildSubject(String oldStatus, String newStatus) {
@@ -49,7 +58,7 @@ public class IndicatorNotificationService {
         return """
                 Sveiki,
                 
-                Indikatorius: %s.
+                Indikatorius: %s
                 %s
 
                 Indikatoriaus būsena pasikeitė: %s į %s.
