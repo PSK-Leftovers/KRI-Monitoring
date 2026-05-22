@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class IndicatorNotificationService {
-    private static final String ANALYST_ROLE = "ANALYST";
+    private static final String DIRECTOR_ROLE = "DIRECTOR";
 
     private final EmailService emailService;
     private final UserRepository userRepository;
@@ -28,7 +28,7 @@ public class IndicatorNotificationService {
         String subject = buildSubject(oldStatusDisplayName, newStatusDisplayName);
         String body = buildBody(indicatorName, indicatorDescription, oldStatusDisplayName, newStatusDisplayName, oldValue, newValue);
 
-        List<String> recipientEmails = userRepository.findAllByRole(ANALYST_ROLE)
+        List<String> recipientEmails = userRepository.findAllByRole(DIRECTOR_ROLE)
                 .stream()
                 .map(User::getEmail)
                 .distinct()
