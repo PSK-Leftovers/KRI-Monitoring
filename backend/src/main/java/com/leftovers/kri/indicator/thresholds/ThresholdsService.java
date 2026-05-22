@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
@@ -18,36 +19,40 @@ public class ThresholdsService {
     private final ThresholdsMapper thresholdsMapper;
 
     public ThresholdsResponse getThresholdChangesByIndicatorId(Long indicatorId, Instant after, Instant before) {
-        Stream<Thresholds> thresholdsHistory = thresholdsRepository
+        List<Thresholds> history = thresholdsRepository
             .findAllByIndicatorIdOrderByRecordedAtDesc(indicatorId)
-            .stream();
+            .stream()
+            .dropWhile(thresholds -> {
+                return after != null && thresholds.getRecordedAt().isBefore(after);
+            })
+            .takeWhile(thresholds -> {
+                return before != null && thresholds.getRecordedAt().isBefore(before);
+            })
+            .toList();
         
-        if (after != null)
-            thresholdsHistory.filter(thresholds -> thresholds.getRecordedAt().isAfter(after));
-
-        if (before != null)
-            thresholdsHistory.filter(thresholds -> thresholds.getRecordedAt().isBefore(before));
+        List<ThresholdChange> greenChanges =
+            extractChanges(history, Thresholds::getGreenThreshold);
         
-        List<ThresholdChange> greenChanges = new ArrayList<>(), yellowChanges = new ArrayList<>(), redChanges = new ArrayList<>();
-        Double greenPrevious = null, yellowPrevious = null, redPrevious = null;
+        List<ThresholdChange> yellowChanges =
+            extractChanges(history, Thresholds::getYellowThreshold);
+        
+        List<ThresholdChange> redChanges =
+            extractChanges(history, Thresholds::getRedThreshold);
 
-        for (Thresholds thresholds : thresholdsHistory.toList()) {
-            if (greenPrevious == null || greenPrevious != thresholds.getGreenThreshold()) {
-                greenChanges.add(new ThresholdChange(thresholds.getRecordedAt(), thresholds.getGreenThreshold()));
-                greenPrevious = thresholds.getGreenThreshold();
-            }
+        return thresholdsMapper.toDto(greenChanges, yellowChanges, redChanges);
+    }
 
-            if (yellowPrevious == null || yellowPrevious != thresholds.getYellowThreshold()) {
-                yellowChanges.add(new ThresholdChange(thresholds.getRecordedAt(), thresholds.getYellowThreshold()));
-                yellowPrevious = thresholds.getYellowThreshold();
-            }
-
-            if (redPrevious == null || redPrevious != thresholds.getRedThreshold()) {
-                redChanges.add(new ThresholdChange(thresholds.getRecordedAt(), thresholds.getRedThreshold()));
-                redPrevious = thresholds.getRedThreshold();
+    private List<ThresholdChange> extractChanges(List<Thresholds> history, Function<Thresholds, Double> getThresholds) {
+        List<ThresholdChange> changes = new ArrayList<>();
+        Double previous = null;
+        
+        for (Thresholds thresholds : history) {
+            if (previous == null || previous != getThresholds.apply(thresholds)) {
+                changes.add(new ThresholdChange(thresholds.getRecordedAt(), thresholds.getGreenThreshold()));
+                previous = getThresholds.apply(thresholds);
             }
         }
 
-        return thresholdsMapper.toDto(greenChanges, yellowChanges, redChanges);
+        return changes;
     }
 }
