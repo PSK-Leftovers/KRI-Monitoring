@@ -37,11 +37,11 @@ public class ThresholdsService {
     private List<Thresholds> filterHistory(List<Thresholds> history, Instant after, Instant before) {
         return history
             .stream()
-            .takeWhile(thresholds -> {
-                return after != null && thresholds.getRecordedAt().isBefore(after);
-            })
             .dropWhile(thresholds -> {
                 return before != null && thresholds.getRecordedAt().isBefore(before);
+            })
+            .takeWhile(thresholds -> {
+                return after != null && thresholds.getRecordedAt().isBefore(after);
             })
             .toList();
     }
