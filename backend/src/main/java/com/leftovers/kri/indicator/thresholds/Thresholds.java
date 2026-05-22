@@ -42,7 +42,8 @@ public class Thresholds {
 
     @PrePersist
     public void setRecordedAt() {
-        if (recordedAt == null)
+        if (recordedAt == null) {
             recordedAt = Instant.now();
+        }
     }
 }
