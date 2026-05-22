@@ -18,17 +18,10 @@ public class ThresholdsService {
     private final ThresholdsMapper thresholdsMapper;
 
     public ThresholdsResponse getThresholdChangesByIndicatorId(Long indicatorId, Instant after, Instant before) {
-        List<Thresholds> history = thresholdsRepository
-            .findAllByIndicatorIdOrderByRecordedAtDesc(indicatorId)
-            .stream()
-            .dropWhile(thresholds -> {
-                return after != null && thresholds.getRecordedAt().isBefore(after);
-            })
-            .takeWhile(thresholds -> {
-                return before != null && thresholds.getRecordedAt().isBefore(before);
-            })
-            .toList();
-        
+        List<Thresholds> history = thresholdsRepository.findAllByIndicatorIdOrderByRecordedAtDesc(indicatorId);
+
+        history = filterHistory(history, after, before);
+
         List<ThresholdChange> greenChanges =
             extractChanges(history, Thresholds::getGreenThreshold);
         
@@ -39,6 +32,18 @@ public class ThresholdsService {
             extractChanges(history, Thresholds::getRedThreshold);
 
         return thresholdsMapper.toDto(greenChanges, yellowChanges, redChanges);
+    }
+
+    private List<Thresholds> filterHistory(List<Thresholds> history, Instant after, Instant before) {
+        return history
+            .stream()
+            .dropWhile(thresholds -> {
+                return after != null && thresholds.getRecordedAt().isBefore(after);
+            })
+            .takeWhile(thresholds -> {
+                return before != null && thresholds.getRecordedAt().isBefore(before);
+            })
+            .toList();
     }
 
     private List<ThresholdChange> extractChanges(List<Thresholds> history, Function<Thresholds, Double> getThresholds) {
