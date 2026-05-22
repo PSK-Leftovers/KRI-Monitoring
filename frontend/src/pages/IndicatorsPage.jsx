@@ -29,6 +29,7 @@ export default function IndicatorsPage() {
     const [recordingValue, setRecordingValue] = useState(null);
     const [graphIndicator, setGraphIndicator] = useState(null);
     const [graphData, setGraphData] = useState([]);
+    const [thresholdsData, setThresholdsData] = useState({green: [], yellow: [], red: []});
     const navigate = useNavigate();
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
     const [fromDate, setFromDate] = useState(new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split("T")[0]);
@@ -98,6 +99,27 @@ export default function IndicatorsPage() {
         const data = await res.json();
 
         setGraphData(data);
+
+        const after = `${fromDate}T00:00:00Z`;
+
+        const beforeDate = new Date(toDate);
+        beforeDate.setDate(beforeDate.getDate() + 1);
+        const before = beforeDate.toISOString();
+
+        const thresholdsRes = await fetch(
+            `${API}/${indicator.id}/thresholds?after=${after}&before=${before}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include"
+            }
+        );
+
+        const thresholdsData = await thresholdsRes.json();
+
+        setThresholdsData(thresholdsData)
     };
 
     if (editing !== null) {
@@ -261,7 +283,7 @@ export default function IndicatorsPage() {
                         </h2>
 
                         {graphData.length > 0 ? (
-                            <IndicatorValuesGraph graphData={graphData} greenThreshold={graphIndicator.greenThreshold} yellowThreshold={graphIndicator.yellowThreshold} redThreshold={graphIndicator.redThreshold} />
+                            <IndicatorValuesGraph graphData={graphData} greenThreshold={thresholdsData.green} yellowThreshold={thresholdsData.yellow} redThreshold={thresholdsData.red} />
                             ) : (
                                 <div className="flex items-center justify-center h-[350px] text-gray-500">
                                     Nėra duomenų
