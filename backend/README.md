@@ -85,8 +85,10 @@ Flyway runs automatically on every startup and applies any pending SQL migration
 ```
 src/main/resources/db/migration/
 ├── V1_0__initial-schema.sql   ← CREATE TABLE statements
-└── V1_1__initial-data.sql     ← seed / sample data
+└── V1_1__initial-data.sql     ← seed / mock data
 ```
+
+**What `V1_1` seeds:** 10 risk indicators (Liquidity Ratio, Debt Ratio, Operational Risk Score, Credit Default Rate, Capital Adequacy Ratio, Customer Churn Rate, Fraud Detection Rate, NPL Ratio, Net Interest Margin, Cybersecurity Incident Count) and ~90 days of historical values per indicator, generated with Postgres `generate_series` + `random()` and value ranges tuned to span green/yellow/red zones. Status is recomputed at the end of the migration to mirror `IndicatorValueService.computeStatus`. Run `task db:reset` to regenerate with fresh randomised values.
 
 ### During early development (schema not stable yet)
 

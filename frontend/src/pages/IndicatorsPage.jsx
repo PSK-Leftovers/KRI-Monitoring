@@ -4,6 +4,7 @@ import IndicatorForm from "../components/IndicatorForm.jsx";
 import DeleteModal from "../components/DeleteModal";
 import ValueEntryModal from "../components/ValueEntryModal.jsx";
 import IndicatorValuesGraph from "../components/IndicatorValuesGraph.jsx";
+import ProtectedButton from "../components/ProtectedButton.jsx";
 
 const API = "http://localhost:8080/api/indicators";
 
@@ -215,9 +216,9 @@ export default function IndicatorsPage() {
                                                 <button onClick={(e) => { e.stopPropagation(); setEditing(indicator); }} className="text-xs text-brand-700 hover:text-brand-800 font-medium hover:underline cursor-pointer">
                                                     Redaguoti
                                                 </button>
-                                                <button onClick={(e) => { e.stopPropagation(); setDeleting(indicator); }} className="text-xs text-red-600 hover:text-red-700 font-medium hover:underline cursor-pointer">
+                                                <ProtectedButton onClick={(e) => { e.stopPropagation(); setDeleting(indicator); }} className="text-xs text-red-600 hover:text-red-700 font-medium hover:underline cursor-pointer">
                                                     Ištrinti
-                                                </button>
+                                                </ProtectedButton>
                                             </div>
                                         </td>
                                     </tr>

@@ -46,3 +46,39 @@ export async function createUser(
   }
   return res.json();
 }
+
+export async function updateUser(
+  id: number,
+  name: string,
+  email: string,
+  password: string,
+  role: string
+) {
+  const payload = { name, email, role, ...(password ? { password } : {}) };
+
+  const res = await fetch(`${ADMIN_URL}/users/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  if (res.status === 409) throw new Error("user_exists");
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message || "update_failed");
+  }
+  return res.json();
+}
+
+export async function deleteUser(id: number) {
+  const res = await fetch(`${ADMIN_URL}/users/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!res.ok && res.status !== 204) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message || "delete_failed");
+  }
+}
