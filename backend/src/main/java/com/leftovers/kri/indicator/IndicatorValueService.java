@@ -2,10 +2,10 @@ package com.leftovers.kri.indicator;
 
 import com.leftovers.kri.indicator.dto.CreateIndicatorValueRequest;
 import com.leftovers.kri.indicator.dto.IndicatorValueResponse;
+import com.leftovers.kri.notification.IndicatorNotificationService;
 import com.leftovers.kri.indicator.dto.IndicatorValues;
 import com.leftovers.kri.indicator.thresholds.Thresholds;
 import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
-
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +24,7 @@ public class IndicatorValueService {
     private final IndicatorRepository indicatorRepository;
     private final IndicatorValueRepository indicatorValueRepository;
     private final IndicatorValueMapper indicatorValueMapper;
+    private final IndicatorNotificationService indicatorNotificationService;
     private final ThresholdsRepository thresholdsRepository;
 
     @Transactional
@@ -31,11 +32,27 @@ public class IndicatorValueService {
         Indicator indicator = indicatorRepository.findById(indicatorId)
                 .orElseThrow(() -> new EntityNotFoundException("Indicator not found with id: " + indicatorId));
 
+        IndicatorStatus oldStatus = indicator.getStatus();
+        Double oldValue = indicatorValueRepository
+                .findTopByIndicatorIdOrderByRecordedAtDesc(indicatorId)
+                .map(IndicatorValue::getValue)
+                .orElse(null);
+
+        IndicatorStatus newStatus = computeStatus(indicator, request.value());
+        Double newValue = request.value();
+
         IndicatorValue indicatorValue = new IndicatorValue();
         indicatorValue.setIndicator(indicator);
-        indicatorValue.setValue(request.value());
+        indicatorValue.setValue(newValue);
 
-        indicator.setStatus(computeStatus(indicator, request.value()));
+        boolean hadPreviousValue = oldValue != null;
+
+        if (hadPreviousValue && oldStatus != newStatus) {
+            indicatorNotificationService.sendNotification(indicator.getName(), indicator.getDescription(),
+                    oldStatus, newStatus, oldValue, newValue);
+        }
+
+        indicator.setStatus(newStatus);
         indicatorRepository.save(indicator);
 
         return indicatorValueMapper.toResponse(indicatorValueRepository.save(indicatorValue));
