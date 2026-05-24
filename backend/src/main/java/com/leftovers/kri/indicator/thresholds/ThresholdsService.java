@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,9 +19,17 @@ public class ThresholdsService {
     private final ThresholdsMapper thresholdsMapper;
 
     public ThresholdsResponse getThresholdChangesByIndicatorId(Long indicatorId, Instant after, Instant before) {
-        List<Thresholds> history = thresholdsRepository.findAllByIndicatorIdOrderByRecordedAtDesc(indicatorId);
+        PredicateSpecification<Thresholds> query = ThresholdsSpecifications.hasIndicatorWithId(indicatorId);
 
-        history = filterHistory(history, after, before);
+        if (after != null) {
+            query = query.and(ThresholdsSpecifications.recordedAfter(after));
+        }
+
+        if (before != null) {
+            query = query.and(ThresholdsSpecifications.recordedBefore(before));
+        }
+        
+        List<Thresholds> history = thresholdsRepository.findAll(query);
 
         List<ThresholdChange> greenChanges =
             extractChanges(history, Thresholds::getGreenThreshold);
@@ -32,18 +41,6 @@ public class ThresholdsService {
             extractChanges(history, Thresholds::getRedThreshold);
 
         return thresholdsMapper.toDto(greenChanges, yellowChanges, redChanges);
-    }
-
-    private List<Thresholds> filterHistory(List<Thresholds> history, Instant after, Instant before) {
-        return history
-            .stream()
-            .dropWhile(thresholds -> {
-                return before != null && thresholds.getRecordedAt().isBefore(before);
-            })
-            .takeWhile(thresholds -> {
-                return after != null && thresholds.getRecordedAt().isBefore(after);
-            })
-            .toList();
     }
 
     private List<ThresholdChange> extractChanges(List<Thresholds> history, Function<Thresholds, Double> getThresholds) {
