@@ -5,12 +5,29 @@ import UsersPage from "./pages/UsersPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/indicators" element={<ProtectedRoute><IndicatorsPage /></ProtectedRoute>} />
-      <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
-  );
+    return (
+        <Routes>
+            <Route path="/" element={<LoginPage />} />
+
+            <Route
+                path="/indicators"
+                element={
+                    <ProtectedRoute>
+                        <IndicatorsPage />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/users"
+                element={
+                    <ProtectedRoute allowedRoles={["ADMIN"]}>
+                        <UsersPage />
+                    </ProtectedRoute>
+                }
+            />
+            
+            <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+    );
 }
