@@ -1,6 +1,9 @@
 package com.leftovers.kri.indicator.thresholds;
 
 import com.leftovers.kri.indicator.thresholds.dto.ThresholdsResponse;
+
+import jakarta.annotation.Nullable;
+
 import com.leftovers.kri.indicator.thresholds.dto.ThresholdChange;
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +21,7 @@ public class ThresholdsService {
     private final ThresholdsRepository thresholdsRepository;
     private final ThresholdsMapper thresholdsMapper;
 
-    public ThresholdsResponse getThresholdChangesByIndicatorId(Long indicatorId, Instant after, Instant before) {
+    public ThresholdsResponse getThresholdChangesByIndicatorId(Long indicatorId, @Nullable Instant after, @Nullable Instant before) {
         PredicateSpecification<Thresholds> query = ThresholdsSpecifications.hasIndicatorWithId(indicatorId);
 
         if (after != null) {
@@ -48,9 +51,11 @@ public class ThresholdsService {
         Double previous = null;
         
         for (Thresholds thresholds : history) {
-            if (previous == null || previous != getThresholds.apply(thresholds)) {
-                changes.add(new ThresholdChange(thresholds.getRecordedAt(), thresholds.getGreenThreshold()));
-                previous = getThresholds.apply(thresholds);
+            Double current = getThresholds.apply(thresholds);
+
+            if (previous == null || Double.compare(previous, current) != 0){
+                changes.add(new ThresholdChange(thresholds.getRecordedAt(), current));
+                previous = current;
             }
         }
 
