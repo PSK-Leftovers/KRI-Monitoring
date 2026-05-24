@@ -25,6 +25,6 @@ public class ThresholdsController {
         @RequestParam(name = "after", required = false) Instant after,
         @RequestParam(name = "before", required = false) Instant before
     ) {
-        return thresholdsService.getThresholdChangesByIndicatorId(id, before, after);
+        return thresholdsService.getThresholdChangesByIndicatorId(id, after, before);
     }
 }
