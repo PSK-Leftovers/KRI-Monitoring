@@ -2,8 +2,18 @@ package com.leftovers.kri.indicator;
 
 import com.leftovers.kri.indicator.dto.CreateIndicatorValueRequest;
 import com.leftovers.kri.indicator.dto.IndicatorValueResponse;
+import com.leftovers.kri.indicator.dto.IndicatorValues;
+import com.leftovers.kri.indicator.thresholds.Thresholds;
+import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +24,7 @@ public class IndicatorValueService {
     private final IndicatorRepository indicatorRepository;
     private final IndicatorValueRepository indicatorValueRepository;
     private final IndicatorValueMapper indicatorValueMapper;
+    private final ThresholdsRepository thresholdsRepository;
 
     @Transactional
     public IndicatorValueResponse create(Long indicatorId, CreateIndicatorValueRequest request) {
@@ -31,31 +42,36 @@ public class IndicatorValueService {
     }
 
     private IndicatorStatus computeStatus(Indicator indicator, double value) {
-        Double green = indicator.getGreenThreshold();
-        Double yellow = indicator.getYellowThreshold();
+        Thresholds thresholds = thresholdsRepository.findTopByIndicatorIdOrderByRecordedAtDesc(indicator.getId())
+            .orElseThrow(() -> new EntityNotFoundException("Thresholds not found for indicator with id: " + indicator.getId()));
 
-        if (green == null || yellow == null) {
-            return IndicatorStatus.UNKNOWN;
-        }
-
-        boolean higherIsBetter = green > yellow;
+        boolean higherIsBetter = thresholds.getGreenThreshold() > thresholds.getYellowThreshold();
 
         if (higherIsBetter) {
-            if (value >= green) {
+            if (value >= thresholds.getGreenThreshold()) {
                 return IndicatorStatus.GREEN;
             }
-            if (value >= yellow) {
+            if (value >= thresholds.getYellowThreshold()) {
                 return IndicatorStatus.YELLOW;
             }
             return IndicatorStatus.RED;
         } else {
-            if (value <= green) {
+            if (value <= thresholds.getGreenThreshold()) {
                 return IndicatorStatus.GREEN;
             }
-            if (value <= yellow) {
+            if (value <= thresholds.getYellowThreshold()) {
                 return IndicatorStatus.YELLOW;
             }
             return IndicatorStatus.RED;
         }
+    }
+
+    public List<IndicatorValues> getIndicatorValues(Long indicatorId, LocalDate from, LocalDate to) {
+
+        Instant fromTimestamp = from.atStartOfDay().toInstant(ZoneOffset.UTC);
+
+        Instant toTimestamp = to.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+
+        return indicatorValueRepository.findByIndicatorIdAndRecordedAtBetweenOrderByRecordedAtAsc(indicatorId, fromTimestamp, toTimestamp);
     }
 }
