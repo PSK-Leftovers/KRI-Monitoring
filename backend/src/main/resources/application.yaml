@@ -49,3 +49,6 @@ logging:
 app:
   email:
     from: ${MAIL_FROM:noreply@localhost}
+
+audit:
+  enabled: true

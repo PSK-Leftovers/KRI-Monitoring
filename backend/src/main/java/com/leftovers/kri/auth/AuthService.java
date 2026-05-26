@@ -2,6 +2,7 @@ package com.leftovers.kri.auth;
 
 import com.leftovers.kri.auth.dto.LoginRequest;
 import com.leftovers.kri.auth.dto.LoginResponse;
+import com.leftovers.kri.logging.Audited;
 import com.leftovers.kri.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -24,6 +25,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
 
+    @Audited(action = "USER_LOGIN")
     @Transactional
     public LoginResponse login(LoginRequest request, HttpServletRequest http) {
 
