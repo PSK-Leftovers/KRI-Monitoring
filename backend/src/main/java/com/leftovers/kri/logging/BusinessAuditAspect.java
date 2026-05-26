@@ -24,6 +24,19 @@ public class BusinessAuditAspect {
 
     private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT_LOGGER");
 
+    private String[] resolveIdentity() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            String username = auth.getName();
+            String roles = auth.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(a -> a.startsWith("ROLE_"))
+                    .collect(Collectors.joining(", "));
+            return new String[]{username, roles};
+        }
+        return new String[]{"anonymous", ""};
+    }
+
     @Around("@annotation(com.leftovers.kri.logging.Audited) || @within(com.leftovers.kri.logging.Audited)")
     public Object audit(ProceedingJoinPoint pjp) throws Throwable {
         Method method = ((MethodSignature) pjp.getSignature()).getMethod();
@@ -38,28 +51,21 @@ public class BusinessAuditAspect {
                 ? audited.action()
                 : className + "." + methodName;
 
-        String username = "anonymous";
-        String roles = "";
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
-            username = auth.getName();
-            roles = auth.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.joining(", "));
-        }
-
         String timestamp = Instant.now().toString();
         long start = System.currentTimeMillis();
         try {
             Object result = pjp.proceed();
             long duration = System.currentTimeMillis() - start;
+            // Read auth after proceed so login() has time to populate the SecurityContext
+            String[] identity = resolveIdentity();
             auditLogger.info("timestamp={} user={} roles=\"{}\" action={} class={} method={} durationMs={} status=OK",
-                    timestamp, username, roles, action, className, methodName, duration);
+                    timestamp, identity[0], identity[1], action, className, methodName, duration);
             return result;
         } catch (Throwable ex) {
             long duration = System.currentTimeMillis() - start;
+            String[] identity = resolveIdentity();
             auditLogger.warn("timestamp={} user={} roles=\"{}\" action={} class={} method={} durationMs={} status=ERROR exception={} errorMessage=\"{}\"",
-                    timestamp, username, roles, action, className, methodName, duration,
+                    timestamp, identity[0], identity[1], action, className, methodName, duration,
                     ex.getClass().getSimpleName(), ex.getMessage());
             throw ex;
         }
