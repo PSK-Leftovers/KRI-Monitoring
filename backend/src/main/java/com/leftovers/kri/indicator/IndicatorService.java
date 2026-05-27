@@ -9,6 +9,7 @@ import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class IndicatorService {
     private final ThresholdsRepository thresholdsRepository;
 
 
+    @Transactional(readOnly = true)
     public List<IndicatorResponse> getAll() {
         return indicatorRepository.findAll().stream()
                 .map(indicator -> {
@@ -43,6 +45,7 @@ public class IndicatorService {
                 .toList();
     }
 
+    @Transactional
     public IndicatorResponse create(CreateIndicatorRequest request) {
         Indicator indicator = indicatorRepository.save(indicatorMapper.toEntity(request));
         
@@ -54,6 +57,7 @@ public class IndicatorService {
         );
     }
 
+    @Transactional
     public IndicatorResponse update(Long id, CreateIndicatorRequest request) {
         Indicator indicator = indicatorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Indicator not found with id: " + id));
@@ -70,6 +74,7 @@ public class IndicatorService {
         );
     }
 
+    @Transactional
     public void delete(Long id) {
         if (!indicatorRepository.existsById(id)) {
             throw new EntityNotFoundException("Indicator not found with id: " + id);

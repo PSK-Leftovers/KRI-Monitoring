@@ -83,6 +83,7 @@ public class IndicatorValueService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<IndicatorValues> getIndicatorValues(Long indicatorId, LocalDate from, LocalDate to) {
 
         Instant fromTimestamp = from.atStartOfDay().toInstant(ZoneOffset.UTC);
