@@ -14,13 +14,19 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "indicator_thresholds")
+@Builder
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Thresholds {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +48,8 @@ public class Thresholds {
 
     @PrePersist
     public void setRecordedAt() {
-        if (recordedAt == null)
+        if (recordedAt == null) {
             recordedAt = Instant.now();
+        }
     }
 }

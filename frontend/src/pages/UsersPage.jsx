@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { listUsers } from "../services/authService";
 import CreateUserModal from "../components/CreateUserModal";
+import EditUserModal from "../components/EditUserModal";
+import { deleteUser } from "../services/authService";
 
 const ROLE_LABELS = {
   ANALYST: "Analitikas",
@@ -13,6 +15,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [showModal, setShowModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
   const navigate = useNavigate();
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -44,6 +47,22 @@ export default function UsersPage() {
   const formatDateTime = (dateStr) => {
     if (!dateStr) return "—";
     return new Date(dateStr).toLocaleString();
+  };
+
+  const openEditModal = (user) => {
+    setEditingUser(user);
+  };
+
+  const handleDelete = async (user) => {
+    const confirmed = window.confirm(`Ar tikrai norite ištrinti vartotoją ${user.name}?`);
+    if (!confirmed) return;
+
+    try {
+      await deleteUser(user.id);
+      await fetchUsers();
+    } catch {
+      window.alert("Nepavyko ištrinti vartotojo.");
+    }
   };
 
   return (
@@ -112,8 +131,18 @@ export default function UsersPage() {
                     <td className="px-6 py-4 text-gray-500">{formatDateTime(user.lastLogin)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <button disabled className="text-xs text-brand-700 font-medium opacity-40 cursor-not-allowed">Redaguoti</button>
-                        <button disabled className="text-xs text-red-600 font-medium opacity-40 cursor-not-allowed">Ištrinti</button>
+                        <button
+                          onClick={() => openEditModal(user)}
+                          className="text-xs text-brand-700 font-medium cursor-pointer hover:underline"
+                        >
+                          Redaguoti
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user)}
+                          className="text-xs text-red-600 font-medium cursor-pointer hover:underline"
+                        >
+                          Ištrinti
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -128,6 +157,16 @@ export default function UsersPage() {
         <CreateUserModal
           onClose={() => {
             setShowModal(false);
+            fetchUsers();
+          }}
+        />
+      )}
+
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          onClose={() => {
+            setEditingUser(null);
             fetchUsers();
           }}
         />

@@ -20,7 +20,11 @@ public class ThresholdsController {
     private final ThresholdsService thresholdsService;
 
     @GetMapping
-    public ThresholdsResponse getAll(@PathVariable Long id, @RequestParam(name = "after", required = false) Instant after, @RequestParam(name = "before", required = false) Instant before) {
-        return thresholdsService.getThresholdChangesByIndicatorId(id, before, after);
+    public ThresholdsResponse getAll(
+        @PathVariable Long id,
+        @RequestParam(name = "after", required = false) Instant after,
+        @RequestParam(name = "before", required = false) Instant before
+    ) {
+        return thresholdsService.getThresholdChangesByIndicatorId(id, after, before);
     }
 }
