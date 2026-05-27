@@ -12,15 +12,35 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+/**
+ * Singleton service with no mutable per-user state.
+ *
+ * The Spring container keeps one instance of this bean, but the service only uses
+ * method-local variables and injected collaborators. That keeps RAM usage lean because
+ * no user-specific data is retained between calls, and it supports multi-tab concurrency
+ * because concurrent requests never share mutable instance state. Once a method finishes,
+ * its temporary objects become eligible for garbage collection.
+ */
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+
+    @Transactional(readOnly = true)
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> getUsersByRole(String role) {
+        return userRepository.findAllByRole(role);
+    }
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
