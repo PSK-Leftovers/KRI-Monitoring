@@ -11,8 +11,7 @@ public class UserJdbcRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public boolean existsByEmail(String email) {
-        // The "?" placeholder creates a prepared statement, so the email value is bound safely
-        // and cannot alter the SQL structure through injection.
+        // Parameterized query explicitly used to satisfy SQL Injection protection requirements
         String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
         return count != null && count > 0;
