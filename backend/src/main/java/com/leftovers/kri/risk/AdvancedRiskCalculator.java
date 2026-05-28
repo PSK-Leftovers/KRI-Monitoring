@@ -16,6 +16,12 @@ public class AdvancedRiskCalculator implements RiskCalculationStrategy {
         double normalizedGap = (currentValue - threshold) / threshold;
         double amplifiedScore = Math.pow(Math.abs(normalizedGap), 1.5d) * 100.0d;
 
-        return normalizedGap <= 0.0d ? amplifiedScore * 0.5d : Math.min(100.0d, 50.0d + amplifiedScore);
+        if (normalizedGap < 0.0d) {
+            return amplifiedScore * 0.5d;
+        }
+        if (normalizedGap == 0.0d) {
+            return 50.0d;
+        }
+        return Math.min(100.0d, 50.0d + amplifiedScore);
     }
 }
