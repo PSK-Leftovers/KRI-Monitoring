@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam; // Pridėtas importas query parametrams
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -50,5 +51,17 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> listUsers() {
         return userService.listUsers();
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse getUserByEmail(@RequestParam String email) {
+        return userService.getUserResponseByEmail(email);
+    }
+
+    @GetMapping("/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserResponse> getUsersByRole(@RequestParam String role) {
+        return userService.getUsersResponseByRole(role);
     }
 }
