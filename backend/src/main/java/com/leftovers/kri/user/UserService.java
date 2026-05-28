@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -25,17 +26,13 @@ public class UserService {
 
 
     @Transactional(readOnly = true)
-    public UserResponse getUserResponseByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .map(userMapper::toResponse)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + email));
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> getUsersResponseByRole(String role) {
-        return userRepository.findAllByRole(role).stream()
-                .map(userMapper::toResponse)
-                .toList();
+    public List<User> getUsersByRole(String role) {
+        return userRepository.findAllByRole(role);
     }
 
     @Transactional
