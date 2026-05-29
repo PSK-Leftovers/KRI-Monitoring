@@ -1,6 +1,7 @@
 package com.leftovers.kri.user;
 
 import com.leftovers.kri.exception.EntityAlreadyExistsException;
+import com.leftovers.kri.logging.Audited;
 import com.leftovers.kri.user.dto.CreateUserRequest;
 import com.leftovers.kri.user.dto.UpdateUserRequest;
 import com.leftovers.kri.user.dto.UserResponse;
@@ -16,12 +17,28 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
+    @Transactional(readOnly = true)
+    public UserResponse getUserResponseByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(userMapper::toResponse)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + email));
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> getUsersResponseByRole(String role) {
+        return userRepository.findAllByRole(role).stream()
+                .map(userMapper::toResponse)
+                .toList();
+    }
+
+    @Audited(action = "CREATE_USER")
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
@@ -34,12 +51,14 @@ public class UserService {
         return userMapper.toResponse(userRepository.save(user));
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponse> listUsers() {
         return userRepository.findAll().stream()
                 .map(userMapper::toResponse)
                 .toList();
     }
 
+    @Audited(action = "UPDATE_USER")
     @Transactional
     public UserResponse updateUser(Long id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
@@ -63,6 +82,7 @@ public class UserService {
         return userMapper.toResponse(userRepository.save(user));
     }
 
+    @Audited(action = "DELETE_USER")
     @Transactional
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {

@@ -44,8 +44,14 @@ logging:
     root: INFO
     org.flywaydb: INFO
     org.hibernate.SQL: INFO
-    org.hibernate.orm.jdbc.bind: INFO # Can be set to TRACE for more information.
+    org.hibernate.orm.jdbc.bind: INFO
 
 app:
   email:
     from: ${MAIL_FROM:noreply@localhost}
+
+audit:
+  enabled: true
+kri:
+  risk:
+    calculator: threshold # threshold | advanced

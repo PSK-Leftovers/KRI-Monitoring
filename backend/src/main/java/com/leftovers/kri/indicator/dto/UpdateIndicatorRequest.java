@@ -1,16 +1,14 @@
 package com.leftovers.kri.indicator.dto;
 
-import com.leftovers.kri.indicator.IndicatorStatus;
+import jakarta.validation.constraints.NotBlank;
 
-public record IndicatorResponse(
-        Long id,
+public record UpdateIndicatorRequest(
+        @NotBlank
         String name,
         String description,
         Double greenThreshold,
         Double yellowThreshold,
         Double redThreshold,
-        IndicatorStatus status,
-        Double latestValue,
         Long version
 ) {
 }
