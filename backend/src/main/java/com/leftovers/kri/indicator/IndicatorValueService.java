@@ -2,21 +2,23 @@ package com.leftovers.kri.indicator;
 
 import com.leftovers.kri.indicator.dto.CreateIndicatorValueRequest;
 import com.leftovers.kri.indicator.dto.IndicatorValueResponse;
-import com.leftovers.kri.notification.IndicatorNotificationService;
 import com.leftovers.kri.indicator.dto.IndicatorValues;
 import com.leftovers.kri.indicator.thresholds.Thresholds;
 import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
+import com.leftovers.kri.notification.IndicatorNotificationService;
+import com.leftovers.kri.risk.RiskService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class IndicatorValueService {
@@ -26,6 +28,7 @@ public class IndicatorValueService {
     private final IndicatorValueMapper indicatorValueMapper;
     private final IndicatorNotificationService indicatorNotificationService;
     private final ThresholdsRepository thresholdsRepository;
+    private final RiskService riskService;
 
     @Transactional
     public IndicatorValueResponse create(Long indicatorId, CreateIndicatorValueRequest request) {
@@ -38,18 +41,33 @@ public class IndicatorValueService {
                 .map(IndicatorValue::getValue)
                 .orElse(null);
 
-        IndicatorStatus newStatus = computeStatus(indicator, request.value());
+        Thresholds thresholds = thresholdsRepository.findTopByIndicatorIdOrderByRecordedAtDesc(indicatorId)
+                .orElseThrow(() -> new EntityNotFoundException("Thresholds not found for indicator: " + indicatorId));
+
+        IndicatorStatus newStatus = computeStatus(thresholds, request.value());
         Double newValue = request.value();
 
         IndicatorValue indicatorValue = new IndicatorValue();
         indicatorValue.setIndicator(indicator);
         indicatorValue.setValue(newValue);
 
+        double riskScore = riskService.calculateRiskScore(newValue, thresholds.getRedThreshold());
+
+        log.info("Strategy applied for indicatorId={}. Risk score: {}", indicatorId, riskScore);
+
+        indicatorValue.setRiskScore(riskScore);
+
         boolean hadPreviousValue = oldValue != null;
 
         if (hadPreviousValue && oldStatus != newStatus) {
-            indicatorNotificationService.sendNotification(indicator.getName(), indicator.getDescription(),
-                    oldStatus, newStatus, oldValue, newValue);
+            indicatorNotificationService.sendNotification(
+                    indicator.getName(),
+                    indicator.getDescription(),
+                    oldStatus,
+                    newStatus,
+                    oldValue,
+                    newValue
+            );
         }
 
         indicator.setStatus(newStatus);
@@ -58,10 +76,7 @@ public class IndicatorValueService {
         return indicatorValueMapper.toResponse(indicatorValueRepository.save(indicatorValue));
     }
 
-    private IndicatorStatus computeStatus(Indicator indicator, double value) {
-        Thresholds thresholds = thresholdsRepository.findTopByIndicatorIdOrderByRecordedAtDesc(indicator.getId())
-            .orElseThrow(() -> new EntityNotFoundException("Thresholds not found for indicator with id: " + indicator.getId()));
-
+    private IndicatorStatus computeStatus(Thresholds thresholds, double value) {
         boolean higherIsBetter = thresholds.getGreenThreshold() > thresholds.getYellowThreshold();
 
         if (higherIsBetter) {
@@ -84,11 +99,12 @@ public class IndicatorValueService {
     }
 
     public List<IndicatorValues> getIndicatorValues(Long indicatorId, LocalDate from, LocalDate to) {
-
         Instant fromTimestamp = from.atStartOfDay().toInstant(ZoneOffset.UTC);
-
         Instant toTimestamp = to.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
-
-        return indicatorValueRepository.findByIndicatorIdAndRecordedAtBetweenOrderByRecordedAtAsc(indicatorId, fromTimestamp, toTimestamp);
+        return indicatorValueRepository.findByIndicatorIdAndRecordedAtBetweenOrderByRecordedAtAsc(
+                indicatorId,
+                fromTimestamp,
+                toTimestamp
+        );
     }
 }
