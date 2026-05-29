@@ -60,7 +60,7 @@ public class IndicatorService {
     }
 
     @Transactional
-    public IndicatorResponse update(Long id, CreateIndicatorRequest request) {
+    public IndicatorResponse update(Long id, UpdateIndicatorRequest request) {
         Indicator indicator = indicatorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Indicator not found with id: " + id));
 
