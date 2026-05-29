@@ -24,7 +24,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
-    @Audited(action = "CREATE_USER")
     @Transactional(readOnly = true)
     public UserResponse getUserResponseByEmail(String email) {
         return userRepository.findByEmail(email)
@@ -39,6 +38,7 @@ public class UserService {
                 .toList();
     }
 
+    @Audited(action = "CREATE_USER")
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
