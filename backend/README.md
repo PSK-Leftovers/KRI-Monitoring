@@ -1,6 +1,6 @@
 # Backend — Spring Boot Guide
 
-A reference for people new to Spring. The `book/` package is a **demo** — it exists to show patterns that can be used when building the real KRI features. Read it alongside this guide.
+A reference for people new to Spring. The `user/` package is a good real-world example of the patterns described here — read it alongside this guide.
 
 - [Package structure](#package-structure)
 - [Request lifecycle](#request-lifecycle)
@@ -20,16 +20,16 @@ A reference for people new to Spring. The `book/` package is a **demo** — it e
 
 ```
 com.leftovers.kri/
-├── book/                        ← one package per domain feature
-│   ├── Book.java                ← JPA entity (maps to a DB table)
-│   ├── BookRepository.java      ← data access (Spring Data JPA)
-│   ├── BookService.java         ← business logic
-│   ├── BookController.java      ← HTTP layer
-│   ├── BookMapper.java          ← DTO ↔ entity conversion (MapStruct)
+├── user/                        ← one package per domain feature
+│   ├── User.java                ← JPA entity (maps to a DB table)
+│   ├── UserRepository.java      ← data access (Spring Data JPA)
+│   ├── UserService.java         ← business logic
+│   ├── UserController.java      ← HTTP layer
+│   ├── UserMapper.java          ← DTO ↔ entity conversion (MapStruct)
 │   └── dto/
-│       ├── CreateBookRequest.java
-│       ├── UpdateBookRequest.java
-│       └── BookResponse.java
+│       ├── CreateUserRequest.java
+│       ├── UpdateUserRequest.java
+│       └── UserResponse.java
 ├── config/
 │   └── OpenApiConfig.java       ← Swagger/OpenAPI setup
 ├── exception/
@@ -39,10 +39,10 @@ com.leftovers.kri/
 │   ├── RequestIdFilter.java         ← attaches X-Request-ID to every request
 │   └── RequestLoggingFilter.java    ← logs method, path, status, duration on completion
 └── security/
-    └── SecurityConfig.java          ← auth config (currently wide open — no auth yet)
+    └── SecurityConfig.java          ← auth config (session cookies, CORS, BCrypt)
 ```
 
-Each new domain feature (`kri/`, `organization/`, etc.) should follow the same layout as `book/`.
+Each new domain feature (`kri/`, `organization/`, etc.) should follow the same layout as `user/`.
 
 ---
 
@@ -57,11 +57,11 @@ RequestIdFilter          — generates/forwards X-Request-ID, puts it in MDC
     ↓
 RequestLoggingFilter     — logs the completed request (method, path, status, duration)
     ↓
-BookController           — validates input, calls the service
+UserController           — validates input, calls the service
     ↓
-BookService              — business logic, calls the repository
+UserService              — business logic, calls the repository
     ↓
-BookRepository           — SQL queries (Spring Data JPA generates the implementation)
+UserRepository           — SQL queries (Spring Data JPA generates the implementation)
     ↓
 PostgreSQL
 ```
@@ -70,10 +70,10 @@ If anything throws an exception at any layer, `GlobalExceptionHandler` intercept
 
 **Start reading here, in this order:**
 
-1. `book/dto/CreateBookRequest.java` — what the client sends
-2. `book/BookController.java` — how requests come in
-3. `book/BookService.java` — where the actual work happens
-4. `book/BookRepository.java` — how data is fetched
+1. `user/dto/CreateUserRequest.java` — what the client sends
+2. `user/UserController.java` — how requests come in
+3. `user/UserService.java` — where the actual work happens
+4. `user/UserRepository.java` — how data is fetched
 5. `exception/GlobalExceptionHandler.java` — how errors become responses
 
 ---
@@ -105,8 +105,8 @@ This wipes the volume and restarts the container — Flyway re-runs all migratio
 Stop editing existing files. Add new numbered migrations instead:
 
 ```
-V1_2__add-organization-id-to-books.sql
-V1_3__create-kri-table.sql
+V1_8__add-last-login-to-users.sql
+V1_9__create-organization-table.sql
 ```
 
 You can do anything in a new migration — add columns, drop columns, rename tables, delete data. There are no restrictions on what SQL you write. The only rule is: **never edit a migration file that has already been applied**. Flyway checksums every file when it runs it, and if the file changes afterwards it will refuse to start with a checksum mismatch error.
@@ -122,10 +122,11 @@ Input validation uses Jakarta Bean Validation annotations. Two steps:
 **Step 1 — annotate the request DTO:**
 
 ```java
-public record CreateBookRequest(
-    @NotBlank String title,
-    @NotBlank String author,
-    @Min(1000) @Max(2100) Integer publishedYear
+public record CreateUserRequest(
+    @NotBlank String name,
+    @NotBlank @Email String email,
+    @NotBlank @Size(min = 8) String password,
+    @NotNull @Pattern(regexp = "ANALYST|DIRECTOR|ADMIN") String role
 ) {}
 ```
 
@@ -133,7 +134,8 @@ public record CreateBookRequest(
 
 ```java
 @PostMapping
-public ResponseEntity<BookResponse> create(@Valid @RequestBody CreateBookRequest request) {
+@ResponseStatus(HttpStatus.CREATED)
+public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
     ...
 }
 ```
@@ -150,17 +152,17 @@ MapStruct reads your mapper interface at compile time and generates the implemen
 
 ```java
 @Mapper(componentModel = "spring")
-public interface BookMapper {
-    BookResponse toResponse(Book book);
-    Book toEntity(CreateBookRequest request);
+public interface UserMapper {
+    UserResponse toResponse(User user);
+    User toEntity(CreateUserRequest request);
 }
 ```
 
-It matches fields by name automatically. If names differ between source and target, add `@Mapping`:
+It matches fields by name automatically. Use `@Mapping` to override a field — e.g. to skip one the request shouldn't set directly (the password gets hashed in the service, not copied straight through):
 
 ```java
-@Mapping(source = "publishedYear", target = "year")
-BookResponse toResponse(Book book);
+@Mapping(target = "password", ignore = true)
+User toEntity(CreateUserRequest request);
 ```
 
 The generated mapper is a Spring bean — inject it normally:
@@ -168,12 +170,12 @@ The generated mapper is a Spring bean — inject it normally:
 ```java
 @Service
 @RequiredArgsConstructor
-public class BookService {
-    private final BookMapper mapper;
+public class UserService {
+    private final UserMapper mapper;
 
-    public BookResponse getById(Long id) {
-        Book book = repository.findById(id).orElseThrow(...);
-        return mapper.toResponse(book);
+    public UserResponse getById(Long id) {
+        User user = repository.findById(id).orElseThrow(...);
+        return mapper.toResponse(user);
     }
 }
 ```
@@ -191,10 +193,10 @@ The cleanest way is to let Lombok generate the constructor:
 ```java
 @Service
 @RequiredArgsConstructor          // generates a constructor for all final fields
-public class BookService {
+public class UserService {
 
-    private final BookRepository bookRepository;   // injected by Spring
-    private final BookMapper bookMapper;           // injected by Spring
+    private final UserRepository userRepository;   // injected by Spring
+    private final UserMapper userMapper;           // injected by Spring
 }
 ```
 
@@ -212,10 +214,10 @@ Lombok generates boilerplate at compile time via annotation processing. The gene
 @Entity
 @Getter              // generates getters for all fields
 @Setter              // generates setters for all fields
-@Builder             // generates a builder: Book.builder().title("...").build()
+@Builder             // generates a builder: User.builder().name("...").build()
 @NoArgsConstructor   // generates no-arg constructor (required by JPA)
 @AllArgsConstructor  // generates all-args constructor (required by @Builder alongside @NoArgsConstructor)
-public class Book { ... }
+public class User { ... }
 ```
 
 **On services / components:**
@@ -224,7 +226,7 @@ public class Book { ... }
 @Service
 @RequiredArgsConstructor   // constructor injection
 @Slf4j                     // generates a `log` field for logging
-public class BookService { ... }
+public class UserService { ... }
 ```
 
 **Common annotations reference:**
@@ -233,10 +235,10 @@ public class BookService { ... }
 |---|---|
 | `@Getter` | Getters for all fields |
 | `@Setter` | Setters for all fields |
-| `@NoArgsConstructor` | `Book()` — no arguments |
-| `@AllArgsConstructor` | `Book(id, title, author, ...)` — all fields |
+| `@NoArgsConstructor` | `User()` — no arguments |
+| `@AllArgsConstructor` | `User(id, name, email, ...)` — all fields |
 | `@RequiredArgsConstructor` | Constructor for all `final` fields only |
-| `@Builder` | `Book.builder().title("x").build()` |
+| `@Builder` | `User.builder().name("x").build()` |
 | `@Slf4j` | `private static final Logger log = ...` |
 | `@Data` | `@Getter` + `@Setter` + `@ToString` + `@EqualsAndHashCode` — avoid on JPA entities |
 
@@ -253,10 +255,10 @@ Every request automatically gets an `X-Request-ID` (generated if the client does
 ```java
 @Slf4j
 @Service
-public class BookService {
+public class UserService {
 
-    public BookResponse getById(Long id) {
-        log.info("Fetching book id={}", id);  // use {} placeholders, never string concat
+    public UserResponse getById(Long id) {
+        log.info("Fetching user id={}", id);  // use {} placeholders, never string concat
         ...
     }
 }

@@ -4,8 +4,6 @@
 
 B2B Key Risk Indicator monitoring platform. Organizations define risk indicators, record values over time, and the system classifies each indicator green/yellow/red against configurable thresholds. DIRECTOR users are notified by email whenever an indicator changes status. Multi-tenant — each client gets an isolated instance.
 
-**The `book/` package is a demo**, not a real feature. It exists purely to showcase Spring patterns (controller, service, repository, DTOs, MapStruct, validation, exception handling). Real domain packages already exist (`auth/`, `user/`, `indicator/`, `indicator/thresholds/`, `notification/`); `book/` will be removed once it's no longer useful as a reference.
-
 ## Tech stack
 
 **Backend**
@@ -47,8 +45,7 @@ com.leftovers.kri/
 ├── security/      ← SecurityConfig (CORS, session, BCrypt)
 ├── logging/       ← RequestIdFilter, RequestLoggingFilter
 ├── exception/     ← GlobalExceptionHandler + ApiError
-├── config/        ← OpenApiConfig
-└── book/          ← DEMO ONLY — reference patterns
+└── config/        ← OpenApiConfig
 ```
 
 One package per domain feature, always:
@@ -83,7 +80,7 @@ feature/
 
 Schema has stabilised enough that we now use **additive migrations**. Current files:
 
-- `V1_0__initial-schema.sql` — books + indicator + indicator_value
+- `V1_0__initial-schema.sql` — indicator + indicator_value
 - `V1_1__initial-data.sql` — seed indicators
 - `V1_2__user.sql` — users table + role check + seed users
 - `V1_3__updated-schema.sql` — moved thresholds into `indicator_thresholds` (history table)

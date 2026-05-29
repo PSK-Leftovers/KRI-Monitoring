@@ -1,6 +1,6 @@
 # Adding a new feature end-to-end
 
-This guide walks through adding a completely new domain feature. The `book/` package is the reference implementation — every step below has a working example there.
+This guide walks through adding a completely new domain feature. The `user/` package is a good reference implementation — every step below has a working example there (it also layers on auth and password hashing, which a basic CRUD feature won't need).
 
 The steps use a hypothetical `Organization` feature. Follow them in order.
 
@@ -53,7 +53,7 @@ public class Organization {
 
 Field names map to column names by convention (`camelCase` → `snake_case`). Use `@Column(name = "...")` only when the names differ.
 
-Reference: `book/Book.java`
+Reference: `user/User.java`
 
 ---
 
@@ -71,7 +71,7 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
 
 You rarely need to write SQL. For anything complex, use `@Query` with JPQL or native SQL.
 
-Reference: `book/BookRepository.java`
+Reference: `user/UserRepository.java`
 
 ---
 
@@ -94,7 +94,7 @@ public record CreateOrganizationRequest(
 
 Always keep request and response types separate — they look similar now but diverge as the feature evolves.
 
-Reference: `book/dto/`
+Reference: `user/dto/`
 
 ---
 
@@ -111,7 +111,7 @@ public interface OrganizationMapper {
 
 MapStruct generates the implementation at compile time by matching field names. See [MapStruct](../README.md#mapstruct-dto-mapping) for details.
 
-Reference: `book/BookMapper.java`
+Reference: `user/UserMapper.java`
 
 ---
 
@@ -163,7 +163,7 @@ public class OrganizationService {
 
 Throw `EntityNotFoundException` for missing resources — `GlobalExceptionHandler` catches it and returns a 404 automatically. No `try/catch` needed.
 
-Reference: `book/BookService.java`
+Reference: `user/UserService.java`
 
 ---
 
@@ -212,7 +212,7 @@ public class OrganizationController {
 - Return DTOs, never JPA entities directly
 - Use `@ResponseStatus` for non-200 success codes (201 Created, 204 No Content)
 
-Reference: `book/BookController.java`
+Reference: `user/UserController.java`
 
 ---
 
