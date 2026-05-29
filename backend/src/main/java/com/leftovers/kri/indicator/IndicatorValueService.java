@@ -56,12 +56,10 @@ public class IndicatorValueService {
         double riskScore;
 
         if (higherIsBetter) {
-            if (newValue <= thresholds.getRedThreshold()) {
-                riskScore = 100.0d;
-            } else {
-                double safetyMargin = newValue / thresholds.getRedThreshold();
-                riskScore = Math.clamp((1.0d / safetyMargin) * 100.0d, 0.0d, 100.0d);
-            }
+            riskScore = riskService.calculateRiskScore(
+                    thresholds.getRedThreshold(),
+                    Math.max(newValue, Double.MIN_VALUE)
+            );
         } else {
             riskScore = riskService.calculateRiskScore(newValue, thresholds.getRedThreshold());
         }
