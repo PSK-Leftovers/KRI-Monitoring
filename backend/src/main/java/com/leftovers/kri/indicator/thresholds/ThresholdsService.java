@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class ThresholdsService {
     private final ThresholdsRepository thresholdsRepository;
     private final ThresholdsMapper thresholdsMapper;
 
+    @Transactional(readOnly = true)
     public ThresholdsResponse getThresholdChangesByIndicatorId(Long indicatorId, @Nullable Instant after, @Nullable Instant before) {
         PredicateSpecification<Thresholds> criteria = ThresholdsSpecifications.hasIndicatorWithId(indicatorId);
 

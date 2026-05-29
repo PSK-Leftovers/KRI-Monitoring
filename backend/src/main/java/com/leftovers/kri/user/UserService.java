@@ -34,6 +34,7 @@ public class UserService {
         return userMapper.toResponse(userRepository.save(user));
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponse> listUsers() {
         return userRepository.findAll().stream()
                 .map(userMapper::toResponse)

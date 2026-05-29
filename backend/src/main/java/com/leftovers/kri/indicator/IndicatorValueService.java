@@ -56,6 +56,7 @@ public class IndicatorValueService {
         return indicatorValueMapper.toResponse(indicatorValueRepository.save(indicatorValue));
     }
 
+    @Transactional(readOnly = true)
     public List<IndicatorValues> getIndicatorValues(Long indicatorId, LocalDate from, LocalDate to) {
 
         Instant fromTimestamp = from.atStartOfDay().toInstant(ZoneOffset.UTC);
