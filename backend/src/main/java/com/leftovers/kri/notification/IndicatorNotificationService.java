@@ -5,6 +5,7 @@ import com.leftovers.kri.user.User;
 import com.leftovers.kri.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class IndicatorNotificationService {
     private final EmailService emailService;
     private final UserRepository userRepository;
 
+    @Async
     public void sendNotification(String indicatorName, String indicatorDescription,
                                  IndicatorStatus oldStatus, IndicatorStatus newStatus,
                                  Double oldValue, Double newValue) {
