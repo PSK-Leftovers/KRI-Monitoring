@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/admin/users")
@@ -56,13 +55,13 @@ public class UserController {
 
     @GetMapping("/search")
     @PreAuthorize("hasRole('ADMIN')")
-    public Optional<User> getUserByEmail(@RequestParam String email) {
-        return userService.getUserByEmail(email);
+    public UserResponse getUserByEmail(@RequestParam String email) {
+        return userService.getUserResponseByEmail(email);
     }
 
     @GetMapping("/role")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<User> getUsersByRole(@RequestParam String role) {
-        return userService.getUsersByRole(role);
+    public List<UserResponse> getUsersByRole(@RequestParam String role) {
+        return userService.getUsersResponseByRole(role);
     }
 }
