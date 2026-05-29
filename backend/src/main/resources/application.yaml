@@ -50,6 +50,8 @@ app:
   email:
     from: ${MAIL_FROM:noreply@localhost}
 
+audit:
+  enabled: true
 kri:
   risk:
     calculator: threshold # threshold | advanced

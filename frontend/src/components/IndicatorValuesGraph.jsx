@@ -42,8 +42,6 @@ export default function IndicatorValuesGraph({ graphData, greenThreshold, yellow
     const minY = Math.min(...allNumbers);
     const maxY = Math.max(...allNumbers);
 
-    console.log(mergedData);
-
     return (
         <div className="w-full h-[350px]">
             <ResponsiveContainer width="100%" height="95%">

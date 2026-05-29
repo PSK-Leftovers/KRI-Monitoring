@@ -3,6 +3,7 @@ package com.leftovers.kri.indicator;
 import com.leftovers.kri.indicator.dto.CreateIndicatorRequest;
 import com.leftovers.kri.indicator.dto.IndicatorResponse;
 import com.leftovers.kri.indicator.dto.UpdateIndicatorRequest;
+import com.leftovers.kri.logging.Audited;
 import com.leftovers.kri.indicator.thresholds.Thresholds;
 import com.leftovers.kri.indicator.thresholds.ThresholdsMapper;
 import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
@@ -47,6 +48,7 @@ public class IndicatorService {
                 .toList();
     }
 
+    @Audited(action = "CREATE_INDICATOR")
     @Transactional
     public IndicatorResponse create(CreateIndicatorRequest request) {
         Indicator indicator = indicatorRepository.save(indicatorMapper.toEntity(request));
@@ -59,6 +61,7 @@ public class IndicatorService {
         );
     }
 
+    @Audited(action = "UPDATE_INDICATOR")
     @Transactional
     public IndicatorResponse update(Long id, UpdateIndicatorRequest request) {
         Indicator indicator = indicatorRepository.findById(id)
@@ -76,6 +79,7 @@ public class IndicatorService {
         return indicatorMapper.toResponse(saved, thresholds);
     }
 
+    @Audited(action = "DELETE_INDICATOR")
     @Transactional
     public void delete(Long id) {
         if (!indicatorRepository.existsById(id)) {

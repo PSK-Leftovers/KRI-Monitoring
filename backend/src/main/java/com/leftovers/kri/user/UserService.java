@@ -1,6 +1,7 @@
 package com.leftovers.kri.user;
 
 import com.leftovers.kri.exception.EntityAlreadyExistsException;
+import com.leftovers.kri.logging.Audited;
 import com.leftovers.kri.user.dto.CreateUserRequest;
 import com.leftovers.kri.user.dto.UpdateUserRequest;
 import com.leftovers.kri.user.dto.UserResponse;
@@ -23,7 +24,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
-
     @Transactional(readOnly = true)
     public UserResponse getUserResponseByEmail(String email) {
         return userRepository.findByEmail(email)
@@ -38,6 +38,7 @@ public class UserService {
                 .toList();
     }
 
+    @Audited(action = "CREATE_USER")
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
@@ -57,6 +58,7 @@ public class UserService {
                 .toList();
     }
 
+    @Audited(action = "UPDATE_USER")
     @Transactional
     public UserResponse updateUser(Long id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
@@ -80,6 +82,7 @@ public class UserService {
         return userMapper.toResponse(userRepository.save(user));
     }
 
+    @Audited(action = "DELETE_USER")
     @Transactional
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {

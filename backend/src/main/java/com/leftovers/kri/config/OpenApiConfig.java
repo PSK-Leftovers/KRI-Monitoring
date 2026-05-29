@@ -13,7 +13,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("KRI Monitoring API")
-                        .description("Demo Spring Boot application showcasing best practices: layered architecture, validation, global exception handling, and structured logging.")
+                        .description("API for the KRI Monitoring platform: risk indicators, threshold classification, and director notifications.")
                         .version("v1"));
     }
 
