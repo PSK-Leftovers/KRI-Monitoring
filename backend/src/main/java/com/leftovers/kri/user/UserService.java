@@ -16,11 +16,27 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+
+
+    @Transactional(readOnly = true)
+    public UserResponse getUserResponseByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(userMapper::toResponse)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + email));
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> getUsersResponseByRole(String role) {
+        return userRepository.findAllByRole(role).stream()
+                .map(userMapper::toResponse)
+                .toList();
+    }
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
