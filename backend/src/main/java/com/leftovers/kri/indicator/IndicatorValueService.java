@@ -2,6 +2,8 @@ package com.leftovers.kri.indicator;
 
 import com.leftovers.kri.indicator.dto.CreateIndicatorValueRequest;
 import com.leftovers.kri.indicator.dto.IndicatorValueResponse;
+import com.leftovers.kri.logging.Audited;
+import com.leftovers.kri.notification.IndicatorNotificationService;
 import com.leftovers.kri.indicator.dto.IndicatorValues;
 import com.leftovers.kri.indicator.thresholds.Thresholds;
 import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
@@ -30,6 +32,7 @@ public class IndicatorValueService {
     private final ThresholdsRepository thresholdsRepository;
     private final RiskService riskService;
 
+    @Audited(action = "RECORD_INDICATOR_VALUE")
     @Transactional
     public IndicatorValueResponse create(Long indicatorId, CreateIndicatorValueRequest request) {
         Indicator indicator = indicatorRepository.findById(indicatorId)
