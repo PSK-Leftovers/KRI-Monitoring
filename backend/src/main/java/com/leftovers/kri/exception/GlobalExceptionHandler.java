@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -46,6 +47,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleEntityAlreadyExists(EntityAlreadyExistsException ex) {
         return ApiError.of(HttpStatus.CONFLICT.value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
+        return ApiError.of(HttpStatus.CONFLICT.value(), "Duomenys buvo pakeisti kito naudotojo", "VERSION_CONFLICT");
     }
 
     @ExceptionHandler(EntityNotFoundException.class)

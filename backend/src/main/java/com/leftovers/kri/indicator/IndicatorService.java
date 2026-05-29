@@ -2,13 +2,16 @@ package com.leftovers.kri.indicator;
 
 import com.leftovers.kri.indicator.dto.CreateIndicatorRequest;
 import com.leftovers.kri.indicator.dto.IndicatorResponse;
+import com.leftovers.kri.indicator.dto.UpdateIndicatorRequest;
 import com.leftovers.kri.indicator.thresholds.Thresholds;
 import com.leftovers.kri.indicator.thresholds.ThresholdsMapper;
 import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -54,20 +57,21 @@ public class IndicatorService {
         );
     }
 
-    public IndicatorResponse update(Long id, CreateIndicatorRequest request) {
+    @Transactional
+    public IndicatorResponse update(Long id, UpdateIndicatorRequest request) {
         Indicator indicator = indicatorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Indicator not found with id: " + id));
 
+        if (request.version() != null && !indicator.getVersion().equals(request.version())) {
+            throw new ObjectOptimisticLockingFailureException(Indicator.class, id);
+        }
+
         indicatorMapper.updateEntityFromDto(request, indicator);
 
-        Indicator saved = indicatorRepository.save(indicator);
+        Indicator saved = indicatorRepository.saveAndFlush(indicator);
+        Thresholds thresholds = thresholdsRepository.save(thresholdsMapper.toEntity(request, saved));
 
-        Thresholds thresholds = thresholdsRepository.save(thresholdsMapper.toEntity(request, indicator));
-
-        return indicatorMapper.toResponse(
-            saved,
-            thresholds
-        );
+        return indicatorMapper.toResponse(saved, thresholds);
     }
 
     public void delete(Long id) {

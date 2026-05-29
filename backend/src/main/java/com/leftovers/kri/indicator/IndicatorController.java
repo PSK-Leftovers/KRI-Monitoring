@@ -2,6 +2,7 @@ package com.leftovers.kri.indicator;
 
 import com.leftovers.kri.indicator.dto.CreateIndicatorRequest;
 import com.leftovers.kri.indicator.dto.IndicatorResponse;
+import com.leftovers.kri.indicator.dto.UpdateIndicatorRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +36,7 @@ public class IndicatorController {
     @PutMapping("/{id}")
     public IndicatorResponse update(
             @PathVariable Long id,
-            @RequestBody @Valid CreateIndicatorRequest request
+            @RequestBody @Valid UpdateIndicatorRequest request
     ) {
         return indicatorService.update(id, request);
     }

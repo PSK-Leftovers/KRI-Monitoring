@@ -5,6 +5,7 @@ import DeleteModal from "../components/DeleteModal";
 import ValueEntryModal from "../components/ValueEntryModal.jsx";
 import IndicatorValuesGraph from "../components/IndicatorValuesGraph.jsx";
 import ProtectedButton from "../components/ProtectedButton.jsx";
+import VersionConflictModal from "../components/VersionConflictModal.jsx";
 
 const API = "http://localhost:8080/api/indicators";
 
@@ -30,6 +31,7 @@ export default function IndicatorsPage() {
     const [graphIndicator, setGraphIndicator] = useState(null);
     const [graphData, setGraphData] = useState([]);
     const [thresholdsData, setThresholdsData] = useState({green: [], yellow: [], red: []});
+    const [conflict, setConflict] = useState(null);
     const navigate = useNavigate();
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
     const [fromDate, setFromDate] = useState(new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split("T")[0]);
@@ -48,16 +50,38 @@ export default function IndicatorsPage() {
         const method = data.id ? "PUT" : "POST";
         const url = data.id ? `${API}/${data.id}` : API;
 
-        await fetch(url, {
+        const res = await fetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
             credentials: "include"
         });
 
+        if (res.status === 409) {
+            const body = await res.json().catch(() => ({}));
+            if (body.code === "VERSION_CONFLICT") {
+                const all = await fetchAll();
+                const fresh = all.find(i => i.id === data.id);
+                setConflict({ pendingData: data, freshIndicator: fresh });
+                return;
+            }
+        }
+
         const updated = await fetchAll();
         setIndicators(updated);
         setEditing(null);
+    };
+
+    const handleConflictRefresh = () => {
+        setEditing(conflict.freshIndicator);
+        setConflict(null);
+    };
+
+    const handleConflictOverwrite = async () => {
+        const all = await fetchAll();
+        const fresh = all.find(i => i.id === conflict.pendingData.id);
+        setConflict(null);
+        await handleSave({ ...conflict.pendingData, version: fresh.version });
     };
 
     const handleDelete = async () => {
@@ -124,11 +148,21 @@ export default function IndicatorsPage() {
 
     if (editing !== null) {
         return (
-            <IndicatorForm
-                initial={editing}
-                onSave={handleSave}
-                onCancel={() => setEditing(null)}
-            />
+            <>
+                <IndicatorForm
+                    key={`${editing?.id ?? 'new'}-${editing?.version ?? 0}`}
+                    initial={editing}
+                    onSave={handleSave}
+                    onCancel={() => setEditing(null)}
+                />
+                {conflict && (
+                    <VersionConflictModal
+                        onRefresh={handleConflictRefresh}
+                        onOverwrite={handleConflictOverwrite}
+                        onCancel={() => setConflict(null)}
+                    />
+                )}
+            </>
         );
     }
 
@@ -155,25 +189,25 @@ export default function IndicatorsPage() {
                 </div>
 
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-sm table-fixed">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-200">
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-[18%]">
                                     Pavadinimas
                                 </th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-[22%]">
                                     Aprašymas
                                 </th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-[12%]">
                                     Dabartinė vertė
                                 </th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-[10%]">
                                     Statusas
                                 </th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-[15%]">
                                     Ribos
                                 </th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-[23%]">
                                     Veiksmai
                                 </th>
                             </tr>
@@ -198,7 +232,7 @@ export default function IndicatorsPage() {
                                         <td className="px-6 py-4 font-medium text-gray-900">
                                             {indicator.name}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 max-w-xs truncate">
+                                        <td className="px-6 py-4 text-gray-500 truncate">
                                             {indicator.description || (
                                                 <span className="text-gray-300 italic">—</span>
                                             )}
@@ -264,6 +298,14 @@ export default function IndicatorsPage() {
                     indicator={recordingValue}
                     onSave={handleRecordValue}
                     onCancel={() => setRecordingValue(null)}
+                />
+            )}
+
+            {conflict && (
+                <VersionConflictModal
+                    onRefresh={handleConflictRefresh}
+                    onOverwrite={handleConflictOverwrite}
+                    onCancel={() => setConflict(null)}
                 />
             )}
 
