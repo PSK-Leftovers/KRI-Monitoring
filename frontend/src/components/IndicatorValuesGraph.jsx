@@ -10,8 +10,9 @@ import {
 } from "recharts";
 
 function stepAfter(arr, time) {
+    const sorted = [...arr].sort((a, b) => a.recordedAt.localeCompare(b.recordedAt));
     let last = null;
-    for (const entry of arr) {
+    for (const entry of sorted) {
         if (entry.recordedAt <= time) last = entry.value;
         else break;
     }
