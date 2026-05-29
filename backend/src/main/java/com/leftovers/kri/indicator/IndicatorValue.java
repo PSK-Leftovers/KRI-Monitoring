@@ -23,6 +23,9 @@ public class IndicatorValue {
     @Column(nullable = false)
     private Double value;
 
+    @Column(name = "risk_score")
+    private Double riskScore;
+
     @Column(nullable = false)
     private Instant recordedAt;
 
