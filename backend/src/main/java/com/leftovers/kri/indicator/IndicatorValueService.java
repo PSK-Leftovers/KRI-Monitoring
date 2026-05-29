@@ -26,6 +26,7 @@ public class IndicatorValueService {
     private final IndicatorRepository indicatorRepository;
     private final IndicatorValueRepository indicatorValueRepository;
     private final IndicatorValueMapper indicatorValueMapper;
+    private final IndicatorStatusService indicatorStatusService;
     private final IndicatorNotificationService indicatorNotificationService;
     private final ThresholdsRepository thresholdsRepository;
     private final RiskService riskService;
