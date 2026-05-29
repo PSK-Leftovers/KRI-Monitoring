@@ -5,8 +5,7 @@ import com.leftovers.kri.indicator.dto.IndicatorValueResponse;
 import com.leftovers.kri.logging.Audited;
 import com.leftovers.kri.notification.IndicatorNotificationService;
 import com.leftovers.kri.indicator.dto.IndicatorValues;
-import com.leftovers.kri.indicator.thresholds.Thresholds;
-import com.leftovers.kri.indicator.thresholds.ThresholdsRepository;
+import com.leftovers.kri.notification.IndicatorNotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -25,8 +24,8 @@ public class IndicatorValueService {
     private final IndicatorRepository indicatorRepository;
     private final IndicatorValueRepository indicatorValueRepository;
     private final IndicatorValueMapper indicatorValueMapper;
+    private final IndicatorStatusService indicatorStatusService;
     private final IndicatorNotificationService indicatorNotificationService;
-    private final ThresholdsRepository thresholdsRepository;
 
     @Audited(action = "RECORD_INDICATOR_VALUE")
     @Transactional
@@ -40,7 +39,7 @@ public class IndicatorValueService {
                 .map(IndicatorValue::getValue)
                 .orElse(null);
 
-        IndicatorStatus newStatus = computeStatus(indicator, request.value());
+        IndicatorStatus newStatus = indicatorStatusService.compute(indicator, request.value());
         Double newValue = request.value();
 
         IndicatorValue indicatorValue = new IndicatorValue();
@@ -60,31 +59,7 @@ public class IndicatorValueService {
         return indicatorValueMapper.toResponse(indicatorValueRepository.save(indicatorValue));
     }
 
-    private IndicatorStatus computeStatus(Indicator indicator, double value) {
-        Thresholds thresholds = thresholdsRepository.findTopByIndicatorIdOrderByRecordedAtDesc(indicator.getId())
-            .orElseThrow(() -> new EntityNotFoundException("Thresholds not found for indicator with id: " + indicator.getId()));
-
-        boolean higherIsBetter = thresholds.getGreenThreshold() > thresholds.getYellowThreshold();
-
-        if (higherIsBetter) {
-            if (value >= thresholds.getGreenThreshold()) {
-                return IndicatorStatus.GREEN;
-            }
-            if (value >= thresholds.getYellowThreshold()) {
-                return IndicatorStatus.YELLOW;
-            }
-            return IndicatorStatus.RED;
-        } else {
-            if (value <= thresholds.getGreenThreshold()) {
-                return IndicatorStatus.GREEN;
-            }
-            if (value <= thresholds.getYellowThreshold()) {
-                return IndicatorStatus.YELLOW;
-            }
-            return IndicatorStatus.RED;
-        }
-    }
-
+    @Transactional(readOnly = true)
     public List<IndicatorValues> getIndicatorValues(Long indicatorId, LocalDate from, LocalDate to) {
 
         Instant fromTimestamp = from.atStartOfDay().toInstant(ZoneOffset.UTC);
