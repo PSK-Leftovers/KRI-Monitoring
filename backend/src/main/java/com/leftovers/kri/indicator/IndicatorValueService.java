@@ -26,7 +26,6 @@ public class IndicatorValueService {
     private final IndicatorRepository indicatorRepository;
     private final IndicatorValueRepository indicatorValueRepository;
     private final IndicatorValueMapper indicatorValueMapper;
-    private final IndicatorStatusService indicatorStatusService;
     private final IndicatorNotificationService indicatorNotificationService;
     private final ThresholdsRepository thresholdsRepository;
     private final RiskService riskService;
@@ -45,16 +44,30 @@ public class IndicatorValueService {
         Thresholds thresholds = thresholdsRepository.findTopByIndicatorIdOrderByRecordedAtDesc(indicatorId)
                 .orElseThrow(() -> new EntityNotFoundException("Thresholds not found for indicator: " + indicatorId));
 
-        IndicatorStatus newStatus = computeStatus(thresholds, request.value());
         Double newValue = request.value();
+
+        IndicatorStatus newStatus = computeStatus(thresholds, newValue);
 
         IndicatorValue indicatorValue = new IndicatorValue();
         indicatorValue.setIndicator(indicator);
         indicatorValue.setValue(newValue);
 
-        double riskScore = riskService.calculateRiskScore(newValue, thresholds.getRedThreshold());
+        boolean higherIsBetter = thresholds.getGreenThreshold() > thresholds.getYellowThreshold();
+        double riskScore;
 
-        log.info("Strategy applied for indicatorId={}. Risk score: {}", indicatorId, riskScore);
+        if (higherIsBetter) {
+            if (newValue <= thresholds.getRedThreshold()) {
+                riskScore = 100.0d;
+            } else {
+                double safetyMargin = newValue / thresholds.getRedThreshold();
+                riskScore = Math.clamp((1.0d / safetyMargin) * 100.0d, 0.0d, 100.0d);
+            }
+        } else {
+            riskScore = riskService.calculateRiskScore(newValue, thresholds.getRedThreshold());
+        }
+
+        log.debug("Strategy applied for indicatorId={}. Direction: higherIsBetter={}, Risk score: {}",
+                indicatorId, higherIsBetter, riskScore);
 
         indicatorValue.setRiskScore(riskScore);
 
