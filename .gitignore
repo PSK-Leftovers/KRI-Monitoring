@@ -21,3 +21,4 @@ frontend/dist/
 # AI
 .claude/settings.local.json
 .claude/SCRUM-*/
+.claude/Kokybiniai-Reikalavimai/
