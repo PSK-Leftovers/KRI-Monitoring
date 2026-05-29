@@ -91,21 +91,21 @@ public class IndicatorValueService {
     }
 
     private IndicatorStatus computeStatus(Thresholds thresholds, double value) {
-        boolean higherIsBetter = thresholds.getGreenThreshold() > thresholds.getYellowThreshold();
+        boolean higherIsBetter = thresholds.getYellowThreshold() > thresholds.getRedThreshold();
 
         if (higherIsBetter) {
-            if (value >= thresholds.getGreenThreshold()) {
+            if (value >= thresholds.getYellowThreshold()) {
                 return IndicatorStatus.GREEN;
             }
-            if (value >= thresholds.getYellowThreshold()) {
+            if (value >= thresholds.getRedThreshold()) {
                 return IndicatorStatus.YELLOW;
             }
             return IndicatorStatus.RED;
         } else {
-            if (value <= thresholds.getGreenThreshold()) {
+            if (value <= thresholds.getYellowThreshold()) {
                 return IndicatorStatus.GREEN;
             }
-            if (value <= thresholds.getYellowThreshold()) {
+            if (value <= thresholds.getRedThreshold()) {
                 return IndicatorStatus.YELLOW;
             }
             return IndicatorStatus.RED;
