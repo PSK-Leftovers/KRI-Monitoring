@@ -46,10 +46,7 @@ public class ThresholdsService {
             criteria = criteria.and(ThresholdsSpecifications.recordedBefore(before));
         }
         
-        List<Thresholds> history = thresholdsRepository.findAll(Specification.where(criteria), Sort.by(Sort.Direction.DESC, "recordedAt"));
-        
-        if (after != null) {
-        }
+        List<Thresholds> history = thresholdsRepository.findAll(Specification.where(criteria), Sort.by(Sort.Direction.ASC, "recordedAt"));
 
         List<ThresholdChange> greenChanges =
             extractChanges(history, Thresholds::getGreenThreshold);
