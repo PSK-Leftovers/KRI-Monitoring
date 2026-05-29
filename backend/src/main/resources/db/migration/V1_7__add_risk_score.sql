@@ -1,0 +1,1 @@
+ALTER TABLE indicator_value ADD COLUMN risk_score DOUBLE PRECISION;
